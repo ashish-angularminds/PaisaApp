@@ -1,0 +1,74 @@
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+      <ion-col class="ion-padding">
+        <ion-avatar
+          style="width: auto; height: auto; background-color: #e991f5"
+        >
+          <ion-img
+            style="object-fit: fill"
+            src="https://cdn-icons-png.flaticon.com/512/16382/16382065.png "
+          ></ion-img>
+        </ion-avatar>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col
+        class="ion-align-self-center ion-padding-horizontal ion-margin-top"
+      >
+        <form [formGroup]="signupForm">
+          <ion-input
+            label="Name"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter Name"
+            [clearInput]="true"
+            shape="round"
+            formControlName="fullname"
+          ></ion-input>
+          <br />
+          <ion-input
+            label="Email"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter Email"
+            [clearInput]="true"
+            shape="round"
+            formControlName="email"
+          ></ion-input>
+          <br />
+          <ion-input
+            label="Password"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter Password"
+            type="password"
+            shape="round"
+            formControlName="password"
+          >
+            <!-- <ion-input-password-toggle
+              slot="end"
+              hide-icon="true"
+            ></ion-input-password-toggle> -->
+          </ion-input>
+        </form>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col offset="4">
+        <ion-button fill="outline" shape="round" size="large" (click)="signup()"
+          >Sign Up</ion-button
+        >
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col class="ion-text-center">
+        <!-- <a routerLink="/signup">Forgot password ?</a>
+          <br /> -->
+        <a routerLink="/signin">Existing user ?</a>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

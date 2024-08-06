@@ -1,17 +1,27 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 3
-    </ion-title>
+<ion-header
+  mode="ios"
+  [translucent]="true"
+  class="ion-no-border ion-padding-horizontal ion-margin-top ion-padding-top"
+>
+  <ion-toolbar color="transparent">
+    <ion-buttons slot="start">
+      <ion-button color="dark" size="large" strong="true">
+        <h1 class="ion-no-margin" style="font-family: 'Monoton', sans-serif">
+          SMS Logs
+        </h1>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+<ion-content [fullscreen]="false" class="ion-padding">
+  <!-- <p>Data1:{{ smsList |json }}</p> -->
+  <p>
+    Credit:{{ creditSmsList |json }} <br />
+    <!-- {{ creditSmsList[1] |json }} -->
+  </p>
+  <p>
+    Spent:{{ spentSmsList |json }} <br />
+    <!-- {{ spentSmsList[1] |json }} -->
+  </p>
 </ion-content>

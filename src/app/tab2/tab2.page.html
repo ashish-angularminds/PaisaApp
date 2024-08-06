@@ -1,17 +1,126 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 2
-    </ion-title>
+<ion-header
+  mode="ios"
+  [translucent]="true"
+  class="ion-no-border ion-padding-horizontal ion-margin-top ion-padding-top"
+>
+  <ion-toolbar color="transparent">
+    <ion-buttons slot="start">
+      <ion-button color="dark" size="large" strong="true">
+        <h1 class="ion-no-margin" style="font-family: 'Monoton', sans-serif">
+          T-Form
+        </h1>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button shape="round" color="dark" (click)="resetForm()">
+        <ion-icon size="large" name="refresh-circle-outline"></ion-icon>
+      </ion-button>
+      <ion-button shape="round" color="dark" (click)="addTransaction()">
+        <ion-icon size="large" name="checkmark-done-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 2</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <ion-list
+    [inset]="true"
+    style="border-radius: 16px"
+    class="ion-padding-vertical"
+    [formGroup]="transaction"
+  >
+    <ion-item>
+      <ion-input
+        mode="md"
+        placeholder="Enter Transcation Amount"
+        type="number"
+        label="Amount"
+        formControlName="amount"
+      ></ion-input>
+    </ion-item>
 
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+    <ion-item>
+      <ion-input
+        mode="md"
+        placeholder="Enter Account Name"
+        type="string"
+        label="Account"
+        formControlName="account"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input
+        mode="md"
+        placeholder="Enter Merchant Name"
+        type="string"
+        label="Merchant"
+        formControlName="merchant"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-select formControlName="type">
+        <div slot="label">Transaction Type</div>
+        <ion-select-option [value]="transactionType.Credit"
+          >Credit</ion-select-option
+        >
+        <ion-select-option [value]="transactionType.Debit"
+          >Debit</ion-select-option
+        >
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select formControlName="mode">
+        <div slot="label">Transcation Mode</div>
+        <ion-select-option [value]="transactionMode.Credit_Card"
+          >Credit Card</ion-select-option
+        >
+        <ion-select-option [value]="transactionMode.Debit_Card"
+          >Debit Card</ion-select-option
+        >
+        <ion-select-option [value]="transactionMode.Cash"
+          >Cash</ion-select-option
+        >
+        <ion-select-option [value]="transactionMode.UPI">UPI</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-select formControlName="category">
+        <div slot="label">Transaction Category</div>
+        <ion-select-option [value]="transactionCategory.Food"
+          >Food</ion-select-option
+        >
+        <ion-select-option [value]="transactionCategory.Shopping"
+          >Shopping</ion-select-option
+        >
+        <ion-select-option [value]="transactionCategory.Medical"
+          >Medical</ion-select-option
+        >
+        <ion-select-option [value]="transactionCategory.Travel"
+          >Travel</ion-select-option
+        >
+        <ion-select-option [value]="transactionCategory.Other"
+          >Other</ion-select-option
+        >
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Date:</ion-label>
+      <ion-datetime-button
+        datetime="datetime"
+        color="danger"
+      ></ion-datetime-button>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="datetime"
+            hourCycle="h12"
+            formControlName="createdAt"
+            mode="ios"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+  </ion-list>
 </ion-content>

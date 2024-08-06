@@ -1,17 +1,215 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+<ion-header
+  mode="ios"
+  [translucent]="true"
+  class="ion-no-border ion-padding-horizontal ion-margin-top ion-padding-top"
+>
+  <ion-toolbar color="transparent">
+    <ion-buttons slot="start">
+      <ion-button color="dark" size="large" strong="true">
+        <h1 class="ion-no-margin" style="font-family: 'Monoton', sans-serif">
+          Paisa
+        </h1>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <!-- <ion-button shape="round" color="dark">
+        <ion-icon size="large" name="add-circle"></ion-icon>
+      </ion-button> -->
+      <ion-button
+        shape="round"
+        color="dark"
+        (click)="setProfileModelFlag(true)"
+      >
+        <ion-icon size="large" name="person-circle"></ion-icon>
+      </ion-button>
+      <!-- <ion-button shape="round" color="dark">
+        <ion-icon size="large" name="notifications-circle"></ion-icon>
+      </ion-button> -->
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div id="menu-content">
+    <ion-grid class="ion-margin-top border">
+      <ion-row
+        class="ion-text-center ion-padding-top ion-justify-content-around ion-align-items-center"
+      >
+        <ion-col size="3.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Total Credit</h5>
+            <h5 class="ion-no-margin amount-text">
+              {{account.totalCredit!}} /
+              {{account.totalCredit!-account.totalSpent!}}
+            </h5>
+          </ion-text>
+        </ion-col>
+        <ion-col size="3.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Total Spend</h5>
+            <h5 class="ion-no-margin amount-text">{{account.totalSpent!}}</h5>
+          </ion-text>
+        </ion-col>
+        <ion-col size="3.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Food Quota</h5>
+            <h5 class="ion-no-margin amount-text">{{calculateQuota()}}</h5>
+          </ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row
+        class="ion-text-center ion-padding-vertical ion-justify-content-around ion-align-items-center"
+      >
+        <ion-col size="5.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Shopping</h5>
+            <h5 class="ion-no-margin amount-text">
+              {{shoppingSpentAmount!}} / {{shoppingCreditAmount!}}
+            </h5>
+          </ion-text>
+        </ion-col>
+        <ion-col size="5.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Food</h5>
+            <h5 class="ion-no-margin amount-text">
+              {{foodSpentAmount!}} / {{foodCreditAmount!}}
+            </h5>
+          </ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row
+        class="ion-text-center ion-padding-bottom ion-justify-content-around ion-align-items-center"
+      >
+        <ion-col size="3.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Medical</h5>
+            <h5 class="ion-no-margin amount-text">
+              {{medicalSpentAmount!}} / {{medicalCreditAmount!}}
+            </h5>
+          </ion-text>
+        </ion-col>
+        <ion-col size="3.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Travel</h5>
+            <h5 class="ion-no-margin amount-text">
+              {{travelSpentAmount!}} / {{travelCreditAmount!}}
+            </h5>
+          </ion-text>
+        </ion-col>
+        <ion-col size="3.5" class="ion-padding sm-card">
+          <ion-text>
+            <h5 class="ion-no-margin title-text">Other</h5>
+            <h5 class="ion-no-margin amount-text">
+              {{otherSpentAmount!}} / {{otherCreditAmount!}}
+            </h5>
+          </ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+    <ion-grid class="ion-padding">
+      <ion-row>
+        <ion-col>
+          <ion-list [inset]="false" lines="full" class="transaction-list">
+            <ion-item-sliding
+              *ngFor="let transactionLog of reverseList(account.transactions!)"
+            >
+              <ion-item [button]="true" [id]="transactionLog.id">
+                <ion-icon
+                  slot="start"
+                  size="large"
+                  [name]="transactionLog?.type===0?'add-circle':'remove-circle'"
+                  [color]="transactionLog?.type===0?'success':'danger'"
+                ></ion-icon>
+                <ion-label
+                  [color]="transactionLog?.type===0?'success':'danger'"
+                >
+                  <h2>{{transactionLog?.amount}}</h2>
+                  <small>{{dateConverter(transactionLog?.createdAt)}}</small>
+                </ion-label>
+
+                <ion-label slot="end" style="display: contents">
+                  <ion-label
+                    slot="start"
+                    style="
+                      overflow: hidden;
+                      text-overflow: ellipsis !important;
+                      white-space: nowrap;
+                      max-width: 35%;
+                      text-align: end;
+                    "
+                  >
+                    <h2>
+                      {{getTransactionCategory(transactionLog?.category)}}
+                    </h2>
+                    <small
+                      >{{getTransactionType(transactionLog?.type)}} / {{
+                      getTransactionMode(transactionLog?.mode)}}</small
+                    >
+                  </ion-label>
+
+                  <ion-label
+                    style="max-width: 25%"
+                    slot="end"
+                    class="ion-text-right"
+                    [color]="transactionLog?.type===1?'success':'danger'"
+                  >
+                  </ion-label>
+                </ion-label>
+              </ion-item>
+
+              <ion-popover
+                [trigger]="transactionLog?.id"
+                triggerAction="click"
+                alignment="end"
+                *ngIf="transactionLog.merchant"
+              >
+                <ng-template>
+                  <ion-content class="ion-padding"
+                    >{{transactionLog?.merchant}}</ion-content
+                  >
+                </ng-template>
+              </ion-popover>
+
+              <ion-item-options slot="end">
+                <ion-item-option
+                  color="primary"
+                  expandable="true"
+                  (click)="updateTransaction(transactionLog)"
+                >
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-item-option>
+                <ion-item-option
+                  color="danger"
+                  expandable="true"
+                  (click)="deleteTransaction(transactionLog.id!, transactionLog.createdAt?.seconds!)"
+                >
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          </ion-list>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <ion-modal [isOpen]="profileModelFlag" mode="ios">
+    <ng-template>
+      <ion-fab style="--background: transparent">
+        <ion-button
+          fill="clear"
+          color="light"
+          (click)="setProfileModelFlag(false)"
+        >
+          <ion-icon name="chevron-back-outline" size="large"> </ion-icon>
+        </ion-button>
+      </ion-fab>
+      <ion-content>
+        <app-profile
+          (setprofileflagfromchild)="setProfileModelFlag($event)"
+        ></app-profile>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

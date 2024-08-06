@@ -1,4 +1,79 @@
-<div id="container">
-  <strong>{{ name }}</strong>
-  <p>Explore <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+<div
+  style="background: url('/../../assets/bg.webp'); background-size: cover"
+  class="ion-padding"
+>
+  <ion-img
+    class="ion-padding ion-margin"
+    src="../../../assets/person.png"
+  ></ion-img>
 </div>
+<ion-list lines="full" class="ion-padding-top">
+  <ion-item>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <small>Name</small>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-text>{{ user.displayName }}</ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+  <ion-item>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <small>Email</small>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-text>{{ user.email }}</ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+  <ion-item>
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <small>Phone</small>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-text>{{ user.phoneNumber || "NAN" }}</ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+</ion-list>
+<div class="ion-padding ion-text-center">
+  <ion-button
+    size="large"
+    fill="outline"
+    color="dark"
+    shape="round"
+    [disabled]="true"
+    >Submit</ion-button
+  >
+</div>
+<ion-list style="background: transparent" lines="full">
+  <ion-item color="light" style="--ion-color-base: #1110 !important">
+    <ion-button id="open-action-sheet" fill="clear" color="dark"
+      ><b>Logout</b></ion-button
+    >
+    <ion-action-sheet
+      trigger="open-action-sheet"
+      header="Are you sure?"
+      [buttons]="actionSheetButtons"
+      (didDismiss)="logout($event)"
+    ></ion-action-sheet>
+  </ion-item>
+  <ion-item color="light" style="--ion-color-base: #1110 !important">
+    <ion-button fill="clear" color="dark"><b>Delete Account</b></ion-button>
+  </ion-item>
+</ion-list>
