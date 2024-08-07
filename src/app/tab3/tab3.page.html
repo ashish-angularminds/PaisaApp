@@ -31,13 +31,10 @@
 </ion-header>
 
 <ion-content [fullscreen]="false" class="ion-padding">
-  <p>Queue:{{ transactionQueue |json }}</p>
-  <p>
-    Credit:{{ creditSmsList |json }} <br />
-    <!-- {{ creditSmsList[1] |json }} -->
-  </p>
-  <p>
-    Spent:{{ spentSmsList |json }} <br />
-    <!-- {{ spentSmsList[1] |json }} -->
-  </p>
+  <p>Queue:</p>
+  <p *ngFor="let element of transactionQueue">{{ element |json }}</p>
+  <p>Spent:</p>
+  <p *ngFor="let element of spentSmsList">{{ element |json }}</p>
+  <p>Credit:</p>
+  <p *ngFor="let element of creditSmsList">{{ element |json }}</p>
 </ion-content>

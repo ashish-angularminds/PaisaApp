@@ -33,12 +33,15 @@ export class Tab3Page implements OnInit {
   }
 
   loadData() {
-    let spendRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled/i;
+    let spendRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited/i;
     let creditRegex = /credited/i;
     SMSInboxReader.getSMSList({ filter: this.filter }).then((data: any[any]) => {
-      this.smsList = data.smsList.filter((element: SMSObject) => /Rs/i.test(element.body));
+      this.smsList = data.smsList.filter((element: SMSObject) =>
+        (/Rs|debited/i.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)));
+      // this.smsList = data.smsList.filter((element: SMSObject) => /Rs/i.test(element.body));
       this.spentSmsList = this.smsList.filter((element: SMSObject) => spendRegex.test(element.body));
       this.creditSmsList = this.smsList.filter((element: SMSObject) => creditRegex.test(element.body));
+      this.organizeData();
     });
   }
 
@@ -54,19 +57,26 @@ export class Tab3Page implements OnInit {
     let createdAtRegex = /rs/i;
     let updatedAtRegex = /rs/i;
     SMSInboxReader.getSMSList({ filter: this.filter }).then((data: any[any]) => {
-      this.smsList = data.smsList.filter((element: SMSObject) => (/Rs|debited/i.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)));
-      this.smsList.forEach((element: SMSObject) => {
-        let newtransaction: transactionInterface = {
-          id: '',
+      // this.smsList = data.smsList.filter((element: SMSObject) => (/Rs|debited/i.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)));
+      let i = 0;
+      for (let element of this.spentSmsList) {
+        // this.smsList.forEach((element: SMSObject) => {
+        i = i + 1;
+        let newtransaction: any = {
+          id: element.id,
           merchant: '',
           createdAt: { seconds: element.date },
           updatedAt: { seconds: element.date },
+          amount: undefined,
+          type: undefined,
+          mode: undefined,
+          account: ''
         };
         if (spendRegex.test(element.body)) {
           let splitString = element.body.split(' ');
-          splitString.forEach((str, index) => {
+          splitString.forEach((str: any, index: number) => {
             if (amountRegex.test(str)) {
-              newtransaction.amount = newtransaction.account ? newtransaction.amount : (str.match(/\d/g)?.join('') ? Number(str.match(/\d/g)?.join('')) : Number(splitString[index + 1]));
+              newtransaction.amount = newtransaction.account ? newtransaction.amount : ((str.match(/\d/g)?.length ? str.split('.')[1].match(/\d/g)?.join('') : splitString.at(index + 1) ? splitString.at(index + 1) : splitString.at(index + 2)));
             }
             if (spendRegex.test(str)) {
               newtransaction.type = transactionType.Debit;
@@ -80,17 +90,21 @@ export class Tab3Page implements OnInit {
             if (modeRegex.test(str)) {
               newtransaction.mode = str.match(modeRegex)![0] !== 'upi' ? str.match(modeRegex)![0] === 'withdraw' ? transactionMode.Debit_Card : transactionMode.Credit_Card : transactionMode.UPI;
             }
-            if (merchantRegex.test(str)) {
-              let i = index + 1;
-              while (splitString[i] !== 'on') {
-                newtransaction.merchant = newtransaction.merchant + ' ' + splitString[i];
-                i = i + 1;
-              }
+            if (merchantRegex.test(str) && /on/i.test(element.body)) {
+              // let i = index + 1;
+              // while (splitString[i] !== 'on') {
+              //   newtransaction.merchant = newtransaction.merchant + ' ' + splitString[i];
+              //   i = i + 1;
+              // }
+              newtransaction.merchant = splitString[i + 1];
             }
           });
-          this.transactionQueue.push(newtransaction);
         }
-      });
+        this.transactionQueue.push(newtransaction);
+        if (i > 15) {
+          break;
+        }
+      }
       // this.creditSmsList = this.smsList.filter((element: SMSObject) => creditRegex.test(element.body));
     });
   }
