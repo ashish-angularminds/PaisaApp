@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { addDoc, collection, Firestore, updateDoc, doc } from '@angular/fire/firestore';
 import { FirestoreService } from '../services/firestore.service';
@@ -19,7 +19,7 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from
   templateUrl: 'tab2.page.html',
   styleUrls: ['tab2.page.scss']
 })
-export class Tab2Page implements OnInit, OnDestroy {
+export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
 
   user!: initalUserStateInterface;
   transactionId: string = '';
@@ -33,6 +33,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   transactionCategory = transactionCategory;
   transactionMode = transactionMode;
   transaction!: FormGroup<any>;
+  cdate: any;
 
   constructor(private formBuilder: FormBuilder, private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestore: Firestore, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
 
@@ -41,11 +42,10 @@ export class Tab2Page implements OnInit, OnDestroy {
       account: new FormControl(null, { validators: [Validators.required] }),
       amount: new FormControl(null, { validators: [Validators.required] }),
       category: new FormControl(null, { validators: [Validators.required] }),
-      createdAt: new FormControl(null, { validators: [] }),
+      updatedAt: new FormControl(null, { validators: [] }),
       merchant: new FormControl(null, { validators: [] }),
       mode: new FormControl(null, { validators: [Validators.required] }),
       type: new FormControl(null, { validators: [Validators.required] }),
-      updatedAt: new FormControl(null, { validators: [] }),
       id: new FormControl(null, { validators: [] }),
     });
     this.transaction?.get('type')?.setValidators([(control: AbstractControl) => {
@@ -59,16 +59,38 @@ export class Tab2Page implements OnInit, OnDestroy {
     this.getAccount();
     this.transactionService.transaction.subscribe((trans: any) => {
       if (trans) {
-        this.transaction.setValue({ ...trans, account: trans.account ? trans.account : '' });
-        this.transaction.controls['createdAt'].setValue(new Date(trans.createdAt?.seconds! * 1000).toISOString());
+        this.transaction.setValue({ ...trans, account: trans.account ? trans.account : '', merchant: trans.merchant ? trans.merchant : '', createdAt: this.getCurrentDateString(trans.createdAt?.seconds! * 1000) });
       } else {
         this.resetForm();
       }
     })
   }
 
+  ngAfterViewInit(): void {
+    this.transaction.addControl('createdAt', new FormControl(this.getCurrentDateString()));
+  }
+
+  getCurrentDateString(seconds?: number) {
+    let mdate;
+    if (seconds) {
+      mdate = new Date(seconds);
+    } else {
+      mdate = new Date();
+    }
+    let flag = true;
+    let fdate = mdate.toJSON().split('').filter((item) => {
+      if (item === 'T') {
+        flag = false;
+      }
+      return flag;
+    }).join('');
+    return (fdate + 'T' + (mdate.toLocaleTimeString()));
+  }
+
   resetForm() {
     this.transaction.reset();
+    this.transaction.removeControl('createdAt');
+    this.transaction.addControl('createdAt', new FormControl(this.getCurrentDateString()));
   }
 
   async presentToast(msg: string) {
@@ -114,8 +136,6 @@ export class Tab2Page implements OnInit, OnDestroy {
             month: new Date(this.transaction.controls['createdAt'].value).getMonth() + 1, year: new Date(this.transaction.controls['createdAt'].value).getFullYear()
           }
         }
-        console.log(this.transaction.value);
-        console.log('new:', newTransactionReq);
         this.store.dispatch(userActions.addTransaction(newTransactionReq));
         this.store.select('user').subscribe(data => {
           this.firestoreService.updateDoc(this.user.Uid!, data);
@@ -131,7 +151,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   async updateTransaction() {
-    let tmpDate = new Date((this.transaction.controls['createdAt'].value).seconds * 1000);
+    let tmpDate = new Date(this.transaction.controls['createdAt'].value);
     let updated: transactionInterface = {
       id: this.transaction.controls['id'].value,
       amount: this.transaction.controls['amount'].value,
@@ -142,6 +162,8 @@ export class Tab2Page implements OnInit, OnDestroy {
       updatedAt: { seconds: this.newDateEpoch }
     };
     await this.store.dispatch(userActions.updateTransaction({ month: tmpDate.getMonth() + 1, newtransaction: updated, transactionId: this.transaction.controls['id'].value, year: tmpDate.getFullYear() }));
+    this.resetForm();
+    this.router.navigate(['tabs', 'home']);
   }
 
   ngOnDestroy(): void {

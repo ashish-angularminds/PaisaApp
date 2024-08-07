@@ -45,7 +45,7 @@
         placeholder="Enter Account Name"
         type="string"
         label="Account"
-        formControlName="account"
+        [formControlName]="'account'"
       ></ion-input>
     </ion-item>
 
@@ -105,7 +105,7 @@
         >
       </ion-select>
     </ion-item>
-    <ion-item>
+    <ion-item *ngIf="transaction.controls['createdAt']">
       <ion-label>Date:</ion-label>
       <ion-datetime-button
         datetime="datetime"

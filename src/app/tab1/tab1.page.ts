@@ -103,7 +103,9 @@ export class Tab1Page implements OnInit {
       case 1:
         return "UPI";
       case 2:
-        return "Card";
+        return "Credit";
+      case 3:
+        return "Debit";
       default:
         return "";
     }

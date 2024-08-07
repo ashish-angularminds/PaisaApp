@@ -11,11 +11,27 @@
         </h1>
       </ion-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-toggle
+        value="credit"
+        (ionChange)="toggleStateChange($event)"
+        [enableOnOffLabels]="true"
+        color="success"
+        class="credit"
+      ></ion-toggle>
+      <ion-toggle
+        value="debit"
+        (ionChange)="toggleStateChange($event)"
+        class="ion-margin-horizontal debit"
+        [enableOnOffLabels]="true"
+        color="danger"
+      ></ion-toggle>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="false" class="ion-padding">
-  <!-- <p>Data1:{{ smsList |json }}</p> -->
+  <p>Queue:{{ transactionQueue |json }}</p>
   <p>
     Credit:{{ creditSmsList |json }} <br />
     <!-- {{ creditSmsList[1] |json }} -->
