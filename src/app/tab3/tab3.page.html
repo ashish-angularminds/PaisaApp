@@ -1,7 +1,7 @@
 <ion-header
   mode="ios"
   [translucent]="true"
-  class="ion-no-border ion-padding-horizontal ion-margin-top ion-padding-top"
+  class="ion-no-border ion-padding-horizontal ion-margin-vertical ion-padding-top"
 >
   <ion-toolbar color="transparent">
     <ion-buttons slot="start">
@@ -26,15 +26,128 @@
         [enableOnOffLabels]="true"
         color="danger"
       ></ion-toggle>
+      <ion-button id="reset-action-sheet">
+        <ion-icon size="large" name="reload-circle-outline"></ion-icon>
+      </ion-button>
+      <ion-action-sheet
+        trigger="reset-action-sheet"
+        header="Actions"
+        [buttons]="resetActionSheetButtons"
+        (didDismiss)="resetList($event)"
+      ></ion-action-sheet>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="false" class="ion-padding">
-  <p>Queue:</p>
-  <p *ngFor="let element of transactionQueue">{{ element |json }}</p>
-  <p>Spent:</p>
-  <p *ngFor="let element of spentSmsList">{{ element |json }}</p>
-  <p>Credit:</p>
-  <p *ngFor="let element of creditSmsList">{{ element |json }}</p>
+<ion-content class="ion-padding-bottom">
+  <!-- <p>Queue:</p>
+  <p *ngFor="let element of transactionQueue">
+    id:{{ element?.id }}
+    <br />
+    amount:{{ element?.amount }}
+    <br />
+    merchant:{{ element?.merchant }}
+    <br />
+    account:{{ element?.account }}
+    <br />
+    type:{{ element?.type }}
+    <br />
+    mode:{{ element?.mode }}
+  </p>
+  <p>smsList:</p>
+  <p *ngFor="let element of smsList">{{ element |json }}</p> -->
+  <!-- <p>Credit:</p>
+  <p *ngFor="let element of creditSmsList">{{ element |json }}</p> -->
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-list [inset]="false" lines="full" class="transaction-list">
+          <ion-item-sliding
+            *ngFor="let transactionLog of reverseList(transactionQueue)"
+          >
+            <ion-item [button]="true" [id]="transactionLog.id">
+              <ion-icon
+                class="ion-no-margin ion-margin-end"
+                slot="start"
+                size="large"
+                [name]="transactionLog?.type===0?'add-circle':'remove-circle'"
+                [color]="transactionLog?.type===0?'success':'danger'"
+              ></ion-icon>
+              <ion-label [color]="transactionLog?.type===0?'success':'danger'">
+                <h2>Rs.{{transactionLog?.amount}}</h2>
+                <small>{{dateConverter(transactionLog?.createdAt)}}</small>
+              </ion-label>
+
+              <ion-label slot="end" style="display: contents">
+                <ion-label
+                  slot="start"
+                  style="
+                    overflow: hidden;
+                    text-overflow: ellipsis !important;
+                    white-space: nowrap;
+                    max-width: 35%;
+                    text-align: end;
+                  "
+                >
+                  <small
+                    >{{transactionLog?.account}}/{{getTransactionMode(transactionLog?.mode)}}</small
+                  >
+                  <br />
+                  <small
+                    >{{getTransactionCategory(transactionLog?.category)}} / {{
+                    transactionLog?.merchant}}</small
+                  >
+                </ion-label>
+
+                <ion-label
+                  style="max-width: 25%"
+                  slot="end"
+                  class="ion-text-right"
+                  [color]="transactionLog?.type===1?'success':'danger'"
+                >
+                </ion-label>
+              </ion-label>
+            </ion-item>
+
+            <ion-popover
+              [trigger]="transactionLog?.id"
+              triggerAction="click"
+              alignment="end"
+            >
+              <ng-template>
+                <ion-content class="ion-padding"
+                  >{{transactionLog?.body}}</ion-content
+                >
+              </ng-template>
+            </ion-popover>
+
+            <ion-item-options slot="end">
+              <ion-item-option
+                color="success"
+                expandable="true"
+                (click)="addTransaction(transactionLog)"
+              >
+                <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+              </ion-item-option>
+              <ion-item-option
+                color="primary"
+                expandable="true"
+                (click)="editTransaction(transactionLog)"
+              >
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-item-option>
+              <ion-item-option
+                color="danger"
+                expandable="true"
+                (click)="deleteTransaction(transactionLog?.id)"
+              >
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

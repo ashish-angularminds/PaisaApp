@@ -2,6 +2,7 @@ ion-toggle {
   --handle-width: 20px;
   --handle-height: 20px;
 }
+
 ion-toggle::part(track),
 ion-toggle.toggle-checked::part(track) {
   height: 25px;
@@ -12,9 +13,17 @@ ion-toggle.toggle-checked::part(track) {
 ion-toggle.toggle-checked::part(handle) {
   background: #fff;
 }
+
 .credit::part(handle) {
   background: #42d96b;
 }
+
 .debit::part(handle) {
   background: #f35e69;
+}
+
+.transaction-list {
+  padding: 0;
+  margin-top: 0;
+  border-radius: 16px;
 }

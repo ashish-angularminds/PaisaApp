@@ -8,5 +8,5 @@ export class TransactionService {
 
   constructor() { }
 
-  transaction = new BehaviorSubject('');
+  transaction = new BehaviorSubject({});
 }

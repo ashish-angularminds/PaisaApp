@@ -5,5 +5,6 @@ export interface initalUserStateInterface {
   accounts: accounts[],
   lastSMSUpdate: { seconds: number },
   creditSMSFlag: boolean,
-  debitSMSFlag: boolean
+  debitSMSFlag: boolean,
+  smsList: any,
 }

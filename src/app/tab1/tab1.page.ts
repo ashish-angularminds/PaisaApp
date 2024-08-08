@@ -43,7 +43,7 @@ export class Tab1Page implements OnInit {
   travelCreditAmount: number = 0;
   otherCreditAmount: number = 0;
 
-  constructor(private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestore: Firestore, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
+  constructor(private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
 
   ngOnInit() {
     this.getAccount();
@@ -85,16 +85,6 @@ export class Tab1Page implements OnInit {
     }
   }
 
-  getTransactionType(data: any) {
-    switch (data) {
-      case 0:
-        return "Credit";
-      case 1:
-        return "Debit";
-      default:
-        return "";
-    }
-  }
 
   getTransactionMode(data: any) {
     switch (data) {

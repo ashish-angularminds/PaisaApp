@@ -11,7 +11,8 @@ const initaluserstate: initalUserStateInterface = {
   lastSMSUpdate: lS.lastSMSUpdate || undefined,
   Uid: lS.Uid || undefined,
   creditSMSFlag: lS.creditSMSFlag || false,
-  debitSMSFlag: lS.debitSMSFlag || false
+  debitSMSFlag: lS.debitSMSFlag || false,
+  smsList: lS.smsList || []
 }
 
 function addTransaction(_account: accounts, transaction: transactionInterface): accounts {

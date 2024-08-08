@@ -57,6 +57,7 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
       return null;
     }])
     this.getAccount();
+    this.resetForm();
     this.transactionService.transaction.subscribe((trans: any) => {
       if (trans) {
         this.transaction.setValue({ ...trans, account: trans.account ? trans.account : '', merchant: trans.merchant ? trans.merchant : '', createdAt: this.getCurrentDateString(trans.createdAt?.seconds! * 1000) });
