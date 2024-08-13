@@ -84,8 +84,9 @@ const userFeature = createFeature({
   name: 'user',
   reducer: createReducer(
     initaluserstate,
-    on(userActions.init, (state) => ({
+    on(userActions.init, (state, action) => ({
       ...state,
+      ...action.user,
     })),
     on(userActions.createUser, (state, action) => ({
       ...state,
@@ -94,7 +95,7 @@ const userFeature = createFeature({
     on(userActions.deleteUser, (state) => ({
       ...state,
       accounts: [],
-      lastSMSUpdate: { seconds: (Date.parse((new Date().setUTCDate(1)).toString()) / 1000) },
+      lastSMSUpdate: { seconds: (Date.parse((new Date().setUTCDate(1)).toString())) },
       Uid: undefined,
     })),
     on(userActions.updateUser, (state, action) => ({

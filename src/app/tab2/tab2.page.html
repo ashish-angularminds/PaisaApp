@@ -22,7 +22,10 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content
+  class="ion-padding"
+  style="--padding-start: 10px !important; --padding-end: 10px !important"
+>
   <ion-list
     [inset]="true"
     style="border-radius: 16px"
@@ -34,7 +37,7 @@
         mode="md"
         placeholder="Enter Transcation Amount"
         type="number"
-        label="Amount"
+        label="Amount :"
         formControlName="amount"
       ></ion-input>
     </ion-item>
@@ -44,7 +47,8 @@
         mode="md"
         placeholder="Enter Account Name"
         type="string"
-        label="Account"
+        label="Account :"
+        maxlength="6"
         [formControlName]="'account'"
       ></ion-input>
     </ion-item>
@@ -54,14 +58,24 @@
         mode="md"
         placeholder="Enter Merchant Name"
         type="string"
-        label="Merchant"
+        label="Merchant :"
         formControlName="merchant"
       ></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-select formControlName="type">
-        <div slot="label">Transaction Type</div>
+      <ion-input
+        mode="md"
+        placeholder="Enter Body Name"
+        type="string"
+        label="Body :"
+        [formControlName]="'body'"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-select formControlName="type" placeholder="Select Transcation Type">
+        <div slot="label">Type :</div>
         <ion-select-option [value]="transactionType.Credit"
           >Credit</ion-select-option
         >
@@ -71,8 +85,8 @@
       </ion-select>
     </ion-item>
     <ion-item>
-      <ion-select formControlName="mode">
-        <div slot="label">Transcation Mode</div>
+      <ion-select formControlName="mode" placeholder="Select Transcation Mode">
+        <div slot="label">Mode :</div>
         <ion-select-option [value]="transactionMode.Credit_Card"
           >Credit Card</ion-select-option
         >
@@ -86,8 +100,11 @@
       </ion-select>
     </ion-item>
     <ion-item>
-      <ion-select formControlName="category">
-        <div slot="label">Transaction Category</div>
+      <ion-select
+        formControlName="category"
+        placeholder="Select Transcation Category"
+      >
+        <div slot="label">Category :</div>
         <ion-select-option [value]="transactionCategory.Food"
           >Food</ion-select-option
         >
@@ -106,11 +123,8 @@
       </ion-select>
     </ion-item>
     <ion-item *ngIf="transaction.controls['createdAt']">
-      <ion-label>Date:</ion-label>
-      <ion-datetime-button
-        datetime="datetime"
-        color="danger"
-      ></ion-datetime-button>
+      <ion-label>Date :</ion-label>
+      <ion-datetime-button datetime="datetime"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
           <ion-datetime

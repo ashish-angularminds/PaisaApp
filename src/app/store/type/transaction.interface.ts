@@ -22,6 +22,7 @@ export interface transactionInterface {
   id?: string,
   amount?: number,
   account?: string,
+  body?: string,
   type?: transactionType,
   mode?: transactionMode,
   category?: transactionCategory,

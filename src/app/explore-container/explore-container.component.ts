@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
@@ -11,6 +11,7 @@ import { initalUserStateInterface } from 'src/app/store/type/InitialUserState.in
   selector: 'app-profile',
   templateUrl: './explore-container.component.html',
   styleUrls: ['./explore-container.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExploreContainerComponent {
 

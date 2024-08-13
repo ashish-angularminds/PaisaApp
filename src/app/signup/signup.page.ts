@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { AuthService } from '../services/auth.service';
@@ -13,6 +13,7 @@ import { initalUserStateInterface } from '../store/type/InitialUserState.interfa
   selector: 'app-signup',
   templateUrl: './signup.page.html',
   styleUrls: ['./signup.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SignupPage implements OnInit {
   user: any;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { AuthService } from '../services/auth.service';
@@ -13,6 +13,7 @@ import { FirestoreService } from '../services/firestore.service';
   selector: 'app-signin',
   templateUrl: './signin.page.html',
   styleUrls: ['./signin.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SigninPage implements OnInit {
 

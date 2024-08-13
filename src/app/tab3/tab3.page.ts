@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ToastController, ToggleCustomEvent } from '@ionic/angular';
 import { Store } from '@ngrx/store';
 import { SMSInboxReader, SMSFilter, SMSObject } from 'capacitor-sms-inbox/dist/esm'
@@ -14,7 +14,8 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
-  styleUrls: ['tab3.page.scss']
+  styleUrls: ['tab3.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Tab3Page implements OnInit {
 
@@ -36,67 +37,48 @@ export class Tab3Page implements OnInit {
       },
     },
   ];
-  transactionQueue: any = [];
-  public smsList: any = [];
+  user: any;
+  smsList: any = [];
   filter!: SMSFilter;
   transactionRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited|credited|withdrawn/i;
   spendRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited/i;
   creditRegex = /credited/i;
   amountRegex = /inr|by|rs/i;
   merchantRegex = /\bto\b|\bat\b/i;
-  // public spentSmsList: any = [];
-  // public creditSmsList: any = [];
-  // sampleDate = new Date("07/01/2024").valueOf();
-  // let categoryRegex = /purchase|hand-picked|fueled|/i;
-  // let transactionRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited|credited/i;
-  // let accountRegex = /onecard|hdfc|sbi/i;
-  // let modeRegex = /upi|credit|withdrawn|card|bank/i;
-  // let typeRegex = /card/i;
-  // let updatedAtRegex = /rs/i;
-  // let spendRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited|withdrawn/i;
-  // let creditRegex = /credited/i;
 
   async ngOnInit() {
-    SMSInboxReader.checkPermissions().then(async (data: any) => {
-      if (data.sms !== "granted") {
-        SMSInboxReader.requestPermissions().then(() => { this.loadData() });
-      } else {
-        this.loadData();
-      }
-    })
-  }
-
-  getFirestoreDoc() {
-    this.store.select(selectUid).subscribe(async (data) => {
-      await this.firestoreService.getDoc(data!).then((data) => {
-        localStorage.setItem('user', JSON.stringify(data.data()));
-      })
-    });
-  }
-
-  updateFirestoreDoc() {
     this.store.select('user').subscribe(async (data) => {
+      this.user = data;
       await this.firestoreService.updateDoc(data!.Uid!, data);
-      localStorage.setItem('user', JSON.stringify(data));
     });
+    if ((await SMSInboxReader.checkPermissions()).sms !== "granted") {
+      SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
+        if (value === "granted") {
+        }
+        this.loadData();
+      });
+    } else {
+      this.loadData();
+    }
   }
 
   async loadData() {
-    this.store.select('user').subscribe((data) => {
-      this.transactionQueue = data.smsList;
-      SMSInboxReader.getSMSList({ filter: { minDate: data.lastSMSUpdate.seconds } }).then((data: any[any]) => {
-        this.smsList = data.smsList.filter((element: SMSObject) =>
-          (this.transactionRegex.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body) && /^((?!not completed).)*$/gmi.test(element.body) && /^((?!request).)*$/gmi.test(element.body)));
-        // this.smsList = data.smsList.filter((element: SMSObject) => /Rs/i.test(element.body));
-        // this.spentSmsList = this.smsList.filter((element: SMSObject) => spendRegex.test(element.body));
-        // this.creditSmsList = this.smsList.filter((element: SMSObject) => creditRegex.test(element.body));
-        this.organizeData();
-      });
+    SMSInboxReader.getSMSList({ filter: { minDate: this.user.lastSMSUpdate.seconds } }).then(async (data) => {
+      await this.store.dispatch(userActions.updateUser({
+        user: {
+          lastSMSUpdate: { seconds: Date.now() },
+          smsList:
+            this.organizeData(data.smsList.filter((element: SMSObject) =>
+            (this.transactionRegex.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)
+              && /^((?!not completed).)*$/gmi.test(element.body) && /^((?!request).)*$/gmi.test(element.body))))
+        }
+      }));
     });
   }
 
-  async organizeData() {
-    for (let element of this.smsList) {
+  organizeData(smsList: any): any {
+    let tmpQueue = [...this.user.smsList];
+    for (let element of smsList) {
       let merchantFlag = false;
       let newtransaction: any = {
         id: element.id,
@@ -128,31 +110,13 @@ export class Tab3Page implements OnInit {
               merchantFlag = true;
             }
           }
-          // let i = index + 1;
-          // while (splitString[i] !== 'on') {
-          //   newtransaction.merchant = newtransaction.merchant + ' ' + splitString[i];
-          //   i = i + 1;
-          // }
-          // newtransaction.merchant = splitString[i + 1];
-          // }
-          // if (spendRegex.test(str)) {
-          //   newtransaction.type = transactionType.Debit;
-          // }
-          // if (accountRegex.test(str)) {
-          //   newtransaction.account = str.match(accountRegex)![0];
-          // }
-          // if (modeRegex.test(str)) {
-          //   newtransaction.mode = newtransaction.mode ? newtransaction.mode : (str.match(/bank/) ? (str.match(/upi/) ? transactionMode.UPI : transactionMode.Debit_Card) : transactionMode.Credit_Card) : transactionMode.UPI;
-          // }
         });
       }
       if (newtransaction.amount) {
-        this.transactionQueue.push(newtransaction);
+        tmpQueue.push(newtransaction);
       }
     }
-    await this.store.dispatch(userActions.updateUser({ user: { smsList: this.transactionQueue, lastSMSUpdate: { seconds: Date.now() } } }));
-    this.updateFirestoreDoc();
-    this.getFirestoreDoc();
+    return tmpQueue;
   }
 
   toggleStateChange(event: ToggleCustomEvent) {
@@ -166,8 +130,8 @@ export class Tab3Page implements OnInit {
   reverseList(list: any) {
     let tmpList = [...list];
     return tmpList.sort((a: any, b: any) => {
-      const aDate: any = new Date(b?.createdAt?.seconds * 1000);
-      const bDate: any = new Date(a?.createdAt?.seconds * 1000);
+      const aDate: any = new Date(b?.createdAt?.seconds);
+      const bDate: any = new Date(a?.createdAt?.seconds);
       return aDate - bDate;
     });
   }
@@ -192,7 +156,6 @@ export class Tab3Page implements OnInit {
         return "";
     }
   }
-
 
   getTransactionMode(data: any) {
     switch (data) {
@@ -220,18 +183,18 @@ export class Tab3Page implements OnInit {
 
   async addTransaction(newtransaction: any) {
     let newTransactionReq;
-    if (newtransaction?.amount && newtransaction?.account &&
-      newtransaction?.type &&
-      newtransaction?.mode &&
-      newtransaction?.category &&
-      newtransaction?.createdAt &&
-      newtransaction?.updatedAt) {
+    if (newtransaction?.amount > 0 && newtransaction?.account !== undefined &&
+      newtransaction?.type < 2 &&
+      newtransaction?.mode < 4 &&
+      newtransaction?.category < 5 &&
+      newtransaction?.createdAt !== undefined &&
+      newtransaction?.updatedAt !== undefined) {
       if (newtransaction?.type === transactionType.Debit) {
         newTransactionReq = {
           transaction: {
             amount: Number(newtransaction?.amount), account: newtransaction?.account,
             type: newtransaction?.type, id: uuidv4(), mode: newtransaction?.mode, category: newtransaction?.category, merchant: newtransaction?.merchant,
-            createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }
+            createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }, body: newtransaction?.body
           },
           month: new Date(newtransaction?.createdAt.seconds).getMonth() + 1, year: new Date(newtransaction?.createdAt.seconds).getFullYear()
         }
@@ -240,14 +203,13 @@ export class Tab3Page implements OnInit {
           transaction: {
             amount: Number(newtransaction?.amount), account: newtransaction?.account,
             type: newtransaction?.type, id: uuidv4(), mode: newtransaction?.mode, category: newtransaction?.category,
-            createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }
+            createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }, body: newtransaction?.body
           },
           month: new Date(newtransaction?.createdAt.seconds).getMonth() + 1, year: new Date(newtransaction?.createdAt.seconds).getFullYear()
         }
       }
+      this.deleteTransaction(newtransaction.id);
       await this.store.dispatch(userActions.addTransaction(newTransactionReq));
-      this.updateFirestoreDoc();
-      this.getFirestoreDoc();
     }
   }
 
@@ -256,7 +218,7 @@ export class Tab3Page implements OnInit {
       transaction: {
         amount: Number(newtransaction?.amount), account: newtransaction?.account,
         type: newtransaction?.type, id: uuidv4(), mode: newtransaction?.mode, category: newtransaction?.category, merchant: newtransaction?.merchant,
-        createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }
+        createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }, body: newtransaction?.body
       },
       month: new Date(newtransaction?.createdAt.seconds).getMonth() + 1, year: new Date(newtransaction?.createdAt.seconds).getFullYear()
     };
@@ -265,24 +227,20 @@ export class Tab3Page implements OnInit {
   }
 
   async deleteTransaction(id: any) {
-    this.transactionQueue = this.transactionQueue.filter((data: any) => {
+    let tmpList = [...this.user.smsList.filter((data: any) => {
       if (data.id === id) {
         return false;
       } else {
         return true;
       }
-    });
-    await this.store.dispatch(userActions.updateUser({ user: { smsList: this.transactionQueue } }));
-    this.updateFirestoreDoc();
-    this.getFirestoreDoc();
+    })];
+    await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
   }
 
   async resetList(event: any) {
     this.presentToast(JSON.stringify(event.detail, null, 2));
     if (event.detail.data.action === "reset") {
       await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: Date.now() } } }));
-      this.updateFirestoreDoc();
-      this.getFirestoreDoc();
     }
   }
 }

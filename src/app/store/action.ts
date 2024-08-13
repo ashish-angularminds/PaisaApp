@@ -15,7 +15,7 @@ import { transactionInterface } from "./type/transaction.interface";
 export const userActions = createActionGroup({
   source: "user",
   events: {
-    init: emptyProps(),
+    init: props<{ user: initalUserStateInterface }>(),
     createUser: props<{ userData: initalUserStateInterface }>(),
     deleteUser: emptyProps(),
     updateUser: props<{ user: initalUserStateInterface | any }>(),

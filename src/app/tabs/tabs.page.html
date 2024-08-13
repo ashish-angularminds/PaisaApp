@@ -1,10 +1,18 @@
 <ion-tabs>
-  <ion-tab-bar slot="bottom" color="transparent">
+  <ion-tab-bar
+    slot="bottom"
+    color="transparent"
+    style="--border: 0px !important"
+  >
     <ion-tab-button tab="home" href="/tabs/home">
       <ion-icon aria-hidden="true" name="home-outline"></ion-icon>
     </ion-tab-button>
 
-    <ion-tab-button tab="addtransaction" href="/tabs/addtransaction">
+    <ion-tab-button
+      tab="addtransaction"
+      href="/tabs/addtransaction"
+      (click)="setEmptyTransaction()"
+    >
       <ion-icon
         aria-hidden="true"
         size="large"

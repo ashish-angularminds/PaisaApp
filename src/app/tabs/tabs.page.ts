@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { TransactionService } from '../services/transaction.service';
 
 @Component({
   selector: 'app-tabs',
@@ -7,6 +8,11 @@ import { Component } from '@angular/core';
 })
 export class TabsPage {
 
-  constructor() { }
+  constructor(private transactionService: TransactionService) { }
 
+  setEmptyTransaction() {
+    setTimeout(() => {
+      this.transactionService.transaction.next({});
+    }, 400);
+  }
 }

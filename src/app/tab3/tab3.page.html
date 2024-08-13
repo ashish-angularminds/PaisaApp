@@ -40,8 +40,9 @@
 </ion-header>
 
 <ion-content class="ion-padding-bottom">
-  <!-- <p>Queue:</p>
-  <p *ngFor="let element of transactionQueue">
+  <!-- <p>Queue:</p> -->
+  <!-- <p *ngFor="let element of user.smsList">{{element.amount}}:</p> -->
+  <!--<p *ngFor="let element of transactionQueue">
     id:{{ element?.id }}
     <br />
     amount:{{ element?.amount }}
@@ -64,7 +65,7 @@
       <ion-col>
         <ion-list [inset]="false" lines="full" class="transaction-list">
           <ion-item-sliding
-            *ngFor="let transactionLog of reverseList(transactionQueue)"
+            *ngFor="let transactionLog of reverseList(user.smsList)"
           >
             <ion-item [button]="true" [id]="transactionLog.id">
               <ion-icon

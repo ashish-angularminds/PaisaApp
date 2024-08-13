@@ -1,12 +1,12 @@
 export const environment = {
   production: true,
   firebaseConfig: {
-    apiKey: "AIzaSyBWk_LHDWDS5NzOIFZ2dg659TnsGvPR_z4",
-    authDomain: "paisa-9677c.firebaseapp.com",
-    projectId: "paisa-9677c",
-    storageBucket: "paisa-9677c.appspot.com",
-    messagingSenderId: "689908999858",
-    appId: "1:689908999858:web:e0f9b48f94d009b4aecbab",
-    measurementId: "G-HYS64L1TDE"
+    apiKey: "AIzaSyAMJ204CcdQLi4ybWr1w5t6x5HlHDfOCcE",
+    authDomain: "paisa-app-700fe.firebaseapp.com",
+    projectId: "paisa-app-700fe",
+    storageBucket: "paisa-app-700fe.appspot.com",
+    messagingSenderId: "574676221207",
+    appId: "1:574676221207:web:d6eebcefa505678bcccb52",
+    measurementId: "G-M6EV1C2WKH"
   }
 };

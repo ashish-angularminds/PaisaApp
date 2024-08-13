@@ -7,17 +7,17 @@ import { transactionInterface, transactionCategory, transactionMode, transaction
 import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { ToastController } from '@ionic/angular';
-import { IonModal } from '@ionic/angular/common';
 import { accounts } from '../store/type/account.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { selectAccounts, selectLastSMSUpdate, selectUid } from '../store/selectors'
 import { TransactionService } from '../services/transaction.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { filter, map, skip } from 'rxjs';
 
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
-  styleUrls: ['tab2.page.scss']
+  styleUrls: ['tab2.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
 
@@ -28,7 +28,7 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
   smsTransactionListModelFlag: boolean = false;
   account!: accounts;
   newDate = new Date();
-  newDateEpoch = Date.now() / 1000;
+  newDateEpoch = Date.now();
   transactionType = transactionType;
   transactionCategory = transactionCategory;
   transactionMode = transactionMode;
@@ -39,14 +39,16 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit() {
     this.transaction = this.formBuilder.group({
-      account: new FormControl(null, { validators: [Validators.required] }),
       amount: new FormControl(null, { validators: [Validators.required] }),
+      account: new FormControl(null, { validators: [Validators.required] }),
+      merchant: new FormControl(null, { validators: [] }),
+      body: new FormControl(null, { validators: [Validators.required] }),
       category: new FormControl(null, { validators: [Validators.required] }),
       updatedAt: new FormControl(null, { validators: [] }),
-      merchant: new FormControl(null, { validators: [] }),
       mode: new FormControl(null, { validators: [Validators.required] }),
       type: new FormControl(null, { validators: [Validators.required] }),
       id: new FormControl(null, { validators: [] }),
+      createdAt: new FormControl(this.getCurrentDateString())
     });
     this.transaction?.get('type')?.setValidators([(control: AbstractControl) => {
       if (control.value !== transactionType.Debit) {
@@ -55,20 +57,25 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
         this.transaction.controls['merchant'].enable();
       }
       return null;
-    }])
-    this.getAccount();
-    this.resetForm();
-    this.transactionService.transaction.subscribe((trans: any) => {
-      if (trans) {
-        this.transaction.setValue({ ...trans, account: trans.account ? trans.account : '', merchant: trans.merchant ? trans.merchant : '', createdAt: this.getCurrentDateString(trans.createdAt?.seconds! * 1000) });
+    }]);
+
+    this.transactionService.transaction.pipe().subscribe((trans: any) => {
+      if (JSON.stringify(trans) !== "{}") {
+        this.transaction.setValue({ ...trans, merchant: trans.merchant || null, createdAt: this.getCurrentDateString(trans.createdAt?.seconds!) });
       } else {
         this.resetForm();
       }
-    })
+    });
+
+
   }
 
-  ngAfterViewInit(): void {
-    this.transaction.addControl('createdAt', new FormControl(this.getCurrentDateString()));
+  ngAfterViewInit() {
+    setTimeout(() => {
+      document.getElementsByTagName('ion-datetime-button')[0].shadowRoot?.childNodes.forEach((element: any) => {
+        element.style.background = "transparent";
+      })
+    }, 1000);
   }
 
   getCurrentDateString(seconds?: number) {
@@ -103,13 +110,6 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
     await toast.present();
   }
 
-  getAccount() {
-    this.store.select('user').subscribe((data: initalUserStateInterface) => {
-      this.user = data;
-      [this.account] = data.accounts.filter((acc) => acc.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
-    });
-  }
-
   async addTransaction() {
     if (this.transaction.controls['id'].value) {
       this.updateTransaction()
@@ -122,7 +122,8 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
               amount: this.transaction.controls['amount'].value, account: this.transaction.controls['account'].value,
               type: this.transaction.controls['type'].value, id: uuidv4(), mode: this.transaction.controls['mode'].value,
               category: this.transaction.controls['category'].value, merchant: this.transaction.controls['merchant'].value,
-              createdAt: { seconds: Date.parse(this.transaction.controls['createdAt'].value) / 1000 }, updatedAt: { seconds: this.newDateEpoch }
+              createdAt: { seconds: Date.parse(this.transaction.controls['createdAt'].value) },
+              updatedAt: { seconds: this.newDateEpoch }, body: this.transaction.controls['body'].value
             },
             month: new Date(this.transaction.controls['createdAt'].value).getMonth() + 1, year: new Date(this.transaction.controls['createdAt'].value).getFullYear()
           }
@@ -131,15 +132,15 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
             transaction: {
               amount: this.transaction.controls['amount'].value, account: this.transaction.controls['account'].value,
               type: this.transaction.controls['type'].value, id: uuidv4(), mode: this.transaction.controls['mode'].value,
-              category: this.transaction.controls['category'].value,
-              createdAt: { seconds: Date.parse(this.transaction.controls['createdAt'].value) / 1000 }, updatedAt: { seconds: this.newDateEpoch }
+              category: this.transaction.controls['category'].value, body: this.transaction.controls['body'].value,
+              createdAt: { seconds: Date.parse(this.transaction.controls['createdAt'].value) }, updatedAt: { seconds: this.newDateEpoch }
             },
             month: new Date(this.transaction.controls['createdAt'].value).getMonth() + 1, year: new Date(this.transaction.controls['createdAt'].value).getFullYear()
           }
         }
         this.store.dispatch(userActions.addTransaction(newTransactionReq));
         this.store.select('user').subscribe(data => {
-          this.firestoreService.updateDoc(this.user.Uid!, data);
+          this.firestoreService.updateDoc(data.Uid!, data);
           localStorage.setItem('user', JSON.stringify(data));
         });
         this.presentToast('Transaction added successfully');
@@ -156,12 +157,17 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
     let updated: transactionInterface = {
       id: this.transaction.controls['id'].value,
       amount: this.transaction.controls['amount'].value,
+      account: this.transaction.controls['amount'].value,
+      body: this.transaction.controls['amount'].value,
       category: this.transaction.controls['category'].value,
       mode: this.transaction.controls['mode'].value,
       type: this.transaction.controls['type'].value,
-      createdAt: { seconds: Date.parse(this.transaction.controls['createdAt'].value) / 1000 },
+      createdAt: { seconds: Date.parse(this.transaction.controls['createdAt'].value) },
       updatedAt: { seconds: this.newDateEpoch }
     };
+    if (this.transaction.controls['merchant'].value) {
+      updated.merchant = this.transaction.controls['merchant'].value;
+    }
     await this.store.dispatch(userActions.updateTransaction({ month: tmpDate.getMonth() + 1, newtransaction: updated, transactionId: this.transaction.controls['id'].value, year: tmpDate.getFullYear() }));
     this.resetForm();
     this.router.navigate(['tabs', 'home']);

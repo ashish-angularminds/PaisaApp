@@ -35,7 +35,15 @@ import { getDatabase, provideDatabase } from '@angular/fire/database';
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule
   ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, provideFirebaseApp(() => initializeApp({ "projectId": "paisa-9677c", "appId": "1:689908999858:web:e0f9b48f94d009b4aecbab", "storageBucket": "paisa-9677c.appspot.com", "apiKey": "AIzaSyBWk_LHDWDS5NzOIFZ2dg659TnsGvPR_z4", "authDomain": "paisa-9677c.firebaseapp.com", "messagingSenderId": "689908999858", "measurementId": "G-HYS64L1TDE" })), provideFirestore(() => getFirestore()), provideDatabase(() => getDatabase()),
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, provideFirebaseApp(() => initializeApp({
+    apiKey: "AIzaSyAMJ204CcdQLi4ybWr1w5t6x5HlHDfOCcE",
+    authDomain: "paisa-app-700fe.firebaseapp.com",
+    projectId: "paisa-app-700fe",
+    storageBucket: "paisa-app-700fe.appspot.com",
+    messagingSenderId: "574676221207",
+    appId: "1:574676221207:web:d6eebcefa505678bcccb52",
+    measurementId: "G-M6EV1C2WKH"
+  })), provideFirestore(() => getFirestore()), provideDatabase(() => getDatabase()),
   ],
   bootstrap: [AppComponent],
 })

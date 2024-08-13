@@ -31,7 +31,7 @@
 
 <ion-content>
   <div id="menu-content">
-    <ion-grid class="ion-margin-top border">
+    <ion-grid>
       <ion-row
         class="ion-text-center ion-padding-top ion-justify-content-around ion-align-items-center"
       >
@@ -39,15 +39,15 @@
           <ion-text>
             <h5 class="ion-no-margin title-text">Total Credit</h5>
             <h5 class="ion-no-margin amount-text">
-              {{account.totalCredit!}} /
-              {{account.totalCredit!-account.totalSpent!}}
+              {{account.totalCredit}} / {{account.totalCredit -
+              account.totalSpent}}
             </h5>
           </ion-text>
         </ion-col>
         <ion-col size="3.5" class="ion-padding sm-card">
           <ion-text>
             <h5 class="ion-no-margin title-text">Total Spend</h5>
-            <h5 class="ion-no-margin amount-text">{{account.totalSpent!}}</h5>
+            <h5 class="ion-no-margin amount-text">{{account!.totalSpent!}}</h5>
           </ion-text>
         </ion-col>
         <ion-col size="3.5" class="ion-padding sm-card">
@@ -107,12 +107,12 @@
       </ion-row>
     </ion-grid>
 
-    <ion-grid class="ion-padding">
+    <ion-grid style="padding: 0 10px !important">
       <ion-row>
         <ion-col>
           <ion-list [inset]="false" lines="full" class="transaction-list">
             <ion-item-sliding
-              *ngFor="let transactionLog of reverseList(account.transactions!)"
+              *ngFor="let transactionLog of reverseList(account.transactions)"
             >
               <ion-item [button]="true" [id]="transactionLog.id">
                 <ion-icon
@@ -140,12 +140,20 @@
                       text-align: end;
                     "
                   >
-                    <h2>
+                    <!-- <h2>
                       {{getTransactionCategory(transactionLog?.category)}}
                     </h2>
                     <small
                       >{{transactionLog?.account | uppercase}} / {{
                       getTransactionMode(transactionLog?.mode)}}</small
+                    > -->
+                    <small
+                      >{{transactionLog?.account}}/{{getTransactionMode(transactionLog?.mode)}}</small
+                    >
+                    <br />
+                    <small
+                      >{{getTransactionCategory(transactionLog?.category)}} / {{
+                      transactionLog?.merchant}}</small
                     >
                   </ion-label>
 

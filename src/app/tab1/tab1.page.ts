@@ -1,37 +1,29 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { addDoc, collection, Firestore, updateDoc, doc } from '@angular/fire/firestore';
 import { FirestoreService } from '../services/firestore.service';
 import { userActions } from '../store/action'
 import { transactionInterface, transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
 import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { ToastController } from '@ionic/angular';
-import { IonModal } from '@ionic/angular/common';
-import { accounts } from '../store/type/account.interface';
-import { v4 as uuidv4 } from 'uuid';
-import { selectAccounts, selectLastSMSUpdate, selectUid } from '../store/selectors'
 import { TransactionService } from '../services/transaction.service';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss']
+  styleUrls: ['tab1.page.scss'],
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab1Page implements OnInit {
 
   user!: initalUserStateInterface;
   transactionId: string = '';
-  addTransactionModelFlag = false;
   profileModelFlag = false;
-  smsTransactionListModelFlag: boolean = false;
-  account!: accounts;
+  account: any = { month: 0, savings: 0, totalCredit: 0, totalSpent: 0, transactions: [], year: 2024 };
   newDate = new Date();
-  newDateEpoch = Date.now() / 1000;
   transactionType = transactionType;
   transactionCategory = transactionCategory;
   transactionMode = transactionMode;
-  transaction!: transactionInterface;
-  formCreatedAt!: any;
+  transactions: any;
   foodSpentAmount: number = 0;
   shoppingSpentAmount: number = 0;
   medicalSpentAmount: number = 0;
@@ -45,27 +37,20 @@ export class Tab1Page implements OnInit {
 
   constructor(private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
 
-  ngOnInit() {
-    this.getAccount();
-    if (!this.account) {
-      let oldMonth = this.newDate.getMonth() === 0 ? 12 : this.newDate.getMonth();
-      let oldYear = oldMonth === 12 ? this.newDate.getFullYear() - 1 : this.newDate.getFullYear();
-      let updatedAccounts = this.user.accounts.map((acc) => {
-        if (acc.month === oldMonth && acc.year === oldYear) {
-          return { ...acc, savings: acc.totalCredit! - acc.totalSpent! }
-        } else {
-          return acc;
-        }
-      });
-      this.store.dispatch(userActions.updateAccount({ accounts: updatedAccounts }));
-      this.store.dispatch(userActions.createAccount({ account: { month: this.newDate.getMonth() + 1, year: this.newDate.getFullYear(), savings: 0, totalCredit: 0, totalSpent: 0, transactions: [] } }));
-      this.updateFirestoreDoc();
-    }
-    this.initializeData();
+  async ngOnInit() {
+    this.store.select('user').subscribe(async (data: any) => {
+      localStorage.setItem('user', JSON.stringify(data));
+      this.user = data;
+      [this.account] = data.accounts.filter((acc: any) => acc.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
+      this.transactions = [...this.account.transactions] as any[];
+      this.initializeData();
+      await this.firestoreService.updateDoc(data!.Uid!, data);
+    });
+
   }
 
   dateConverter(date: any) {
-    return (new Date(date.seconds * 1000).toLocaleDateString()) + " - " + (new Date(date.seconds * 1000).toLocaleTimeString('en-US'));
+    return (new Date(date.seconds).toLocaleDateString()) + " - " + (new Date(date.seconds).toLocaleTimeString('en-US'));
   }
 
   getTransactionCategory(data: any) {
@@ -104,8 +89,8 @@ export class Tab1Page implements OnInit {
   reverseList(list: transactionInterface[]) {
     let tmpList = [...list];
     return tmpList.sort((a: any, b: any) => {
-      const aDate: any = new Date(b?.createdAt?.seconds * 1000);
-      const bDate: any = new Date(a?.createdAt?.seconds * 1000);
+      const aDate: any = new Date(b?.createdAt?.seconds);
+      const bDate: any = new Date(a?.createdAt?.seconds);
       return aDate - bDate;
     });
   }
@@ -119,32 +104,8 @@ export class Tab1Page implements OnInit {
     await toast.present();
   }
 
-  setSMSTransactionListModelFlag(flag: boolean) {
-    this.smsTransactionListModelFlag = flag;
-  }
-
   setProfileModelFlag(flag: boolean) {
     this.profileModelFlag = flag;
-  }
-
-  setAddTransactionModelFlag(flag: boolean, trans?: transactionInterface) {
-    if (trans) {
-      this.transaction = { ...trans };
-      this.formCreatedAt = new Date(trans.createdAt?.seconds! * 1000).toISOString();
-      this.addTransactionModelFlag = flag;
-    } else {
-      this.transaction = {
-        amount: undefined,
-        category: undefined,
-        type: undefined,
-        mode: undefined,
-        merchant: undefined,
-        account: undefined,
-        id: undefined
-      }
-      this.formCreatedAt = new Date().toISOString();
-      this.addTransactionModelFlag = flag;
-    }
   }
 
   calculateQuota() {
@@ -156,46 +117,18 @@ export class Tab1Page implements OnInit {
     return quota + " / " + totalquota;
   }
 
-  updateFirestoreDoc() {
-    this.store.select('user').subscribe(async (data) => {
-      await this.firestoreService.updateDoc(data!.Uid!, data);
-      localStorage.setItem('user', JSON.stringify(data));
-    });
-  }
-
-  getAccount() {
-    this.store.select('user').subscribe((data: initalUserStateInterface) => {
-      this.user = data;
-      [this.account] = data.accounts.filter((acc) => acc.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
-    });
-  }
-
-  getFirestoreDoc() {
-    this.store.select(selectUid).subscribe(async (data) => {
-      await this.firestoreService.getDoc(data!).then((data) => {
-        localStorage.setItem('user', JSON.stringify(data.data()));
-      })
-    });
-  }
-
   initializeData() {
-    this.updateFirestoreDoc();
-    this.getFirestoreDoc();
-    this.getAccount();
-
     this.foodSpentAmount = 0;
     this.shoppingSpentAmount = 0;
     this.travelSpentAmount = 0;
     this.medicalSpentAmount = 0;
     this.otherSpentAmount = 0;
-
     this.foodCreditAmount = 0;
     this.shoppingCreditAmount = 0;
     this.travelCreditAmount = 0;
     this.medicalCreditAmount = 0;
     this.otherCreditAmount = 0;
-
-    this.account.transactions?.forEach((data) => {
+    this.account.transactions?.forEach((data: any) => {
       if (data.type === transactionType.Debit) {
         switch (data.category) {
           case 0:
@@ -241,12 +174,13 @@ export class Tab1Page implements OnInit {
   }
 
   async deleteTransaction(id: string, seconds: number) {
-    let date = new Date(seconds * 1000);
+    let date = new Date(seconds);
     await this.store.dispatch(userActions.deleteTransaction({ transactionId: id, month: date.getMonth() + 1, year: date.getFullYear() }));
     this.initializeData();
   }
 
   async updateTransaction(trans: any) {
+    // this.transactionService.transaction.next(trans);
     this.transactionService.transaction.next(trans);
     this.router.navigate(['tabs', 'addtransaction']);
   }
