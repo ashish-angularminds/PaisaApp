@@ -58,7 +58,6 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
       }
       return null;
     }]);
-
     this.transactionService.transaction.pipe().subscribe((trans: any) => {
       if (JSON.stringify(trans) !== "{}") {
         this.transaction.setValue({ ...trans, merchant: trans.merchant || null, createdAt: this.getCurrentDateString(trans.createdAt?.seconds!) });
@@ -66,8 +65,6 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
         this.resetForm();
       }
     });
-
-
   }
 
   ngAfterViewInit() {
@@ -99,15 +96,6 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
     this.transaction.reset();
     this.transaction.removeControl('createdAt');
     this.transaction.addControl('createdAt', new FormControl(this.getCurrentDateString()));
-  }
-
-  async presentToast(msg: string) {
-    const toast = await this.toastController.create({
-      message: msg,
-      duration: 1500,
-      position: 'bottom',
-    });
-    await toast.present();
   }
 
   async addTransaction() {
@@ -143,11 +131,11 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
           this.firestoreService.updateDoc(data.Uid!, data);
           localStorage.setItem('user', JSON.stringify(data));
         });
-        this.presentToast('Transaction added successfully');
+        this.transactionService.presentToast('Transaction added successfully');
         this.resetForm();
         this.router.navigate(['tabs', 'home']);
       } else {
-        this.presentToast('Transaction is not valid, check all fields')
+        this.transactionService.presentToast('Transaction is not valid, check all fields')
       }
     }
   }

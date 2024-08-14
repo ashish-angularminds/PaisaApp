@@ -15,6 +15,7 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getDatabase, provideDatabase } from '@angular/fire/database';
+import { SortListPipe } from './pipes/sort-list.pipe';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,7 +34,7 @@ import { getDatabase, provideDatabase } from '@angular/fire/database';
     AngularFireModule,
     AngularFireAuthModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule
+    AngularFirestoreModule,
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, provideFirebaseApp(() => initializeApp({
     apiKey: "AIzaSyAMJ204CcdQLi4ybWr1w5t6x5HlHDfOCcE",

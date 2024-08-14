@@ -112,7 +112,7 @@
         <ion-col>
           <ion-list [inset]="false" lines="full" class="transaction-list">
             <ion-item-sliding
-              *ngFor="let transactionLog of reverseList(account.transactions)"
+              *ngFor="let transactionLog of account.transactions|sortList"
             >
               <ion-item [button]="true" [id]="transactionLog.id">
                 <ion-icon
@@ -126,7 +126,7 @@
                   [color]="transactionLog?.type===0?'success':'danger'"
                 >
                   <h2>Rs.{{transactionLog?.amount}}</h2>
-                  <small>{{dateConverter(transactionLog?.createdAt)}}</small>
+                  <small>{{transactionLog?.createdAt|fullDate}}</small>
                 </ion-label>
 
                 <ion-label slot="end" style="display: contents">
@@ -148,11 +148,11 @@
                       getTransactionMode(transactionLog?.mode)}}</small
                     > -->
                     <small
-                      >{{transactionLog?.account}}/{{getTransactionMode(transactionLog?.mode)}}</small
+                      >{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small
                     >
                     <br />
                     <small
-                      >{{getTransactionCategory(transactionLog?.category)}} / {{
+                      >{{transactionLog?.category|category}} / {{
                       transactionLog?.merchant}}</small
                     >
                   </ion-label>

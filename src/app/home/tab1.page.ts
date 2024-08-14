@@ -49,61 +49,6 @@ export class Tab1Page implements OnInit {
 
   }
 
-  dateConverter(date: any) {
-    return (new Date(date.seconds).toLocaleDateString()) + " - " + (new Date(date.seconds).toLocaleTimeString('en-US'));
-  }
-
-  getTransactionCategory(data: any) {
-    switch (data) {
-      case 0:
-        return "Food";
-      case 1:
-        return "Shopping";
-      case 2:
-        return "Travel";
-      case 3:
-        return "Medical";
-      case 4:
-        return "Other";
-      default:
-        return "";
-    }
-  }
-
-
-  getTransactionMode(data: any) {
-    switch (data) {
-      case 0:
-        return "Cash";
-      case 1:
-        return "UPI";
-      case 2:
-        return "Credit";
-      case 3:
-        return "Debit";
-      default:
-        return "";
-    }
-  }
-
-  reverseList(list: transactionInterface[]) {
-    let tmpList = [...list];
-    return tmpList.sort((a: any, b: any) => {
-      const aDate: any = new Date(b?.createdAt?.seconds);
-      const bDate: any = new Date(a?.createdAt?.seconds);
-      return aDate - bDate;
-    });
-  }
-
-  async presentToast(msg: string) {
-    const toast = await this.toastController.create({
-      message: msg,
-      duration: 1500,
-      position: 'bottom',
-    });
-    await toast.present();
-  }
-
   setProfileModelFlag(flag: boolean) {
     this.profileModelFlag = flag;
   }
@@ -176,11 +121,11 @@ export class Tab1Page implements OnInit {
   async deleteTransaction(id: string, seconds: number) {
     let date = new Date(seconds);
     await this.store.dispatch(userActions.deleteTransaction({ transactionId: id, month: date.getMonth() + 1, year: date.getFullYear() }));
+    this.transactionService.presentToast("Transaction deleted successfully");
     this.initializeData();
   }
 
   async updateTransaction(trans: any) {
-    // this.transactionService.transaction.next(trans);
     this.transactionService.transaction.next(trans);
     this.router.navigate(['tabs', 'addtransaction']);
   }
