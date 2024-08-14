@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { ToastController } from '@ionic/angular';
 import { TransactionService } from '../services/transaction.service';
+import { AuthService } from '../services/auth.service';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -35,18 +36,19 @@ export class Tab1Page implements OnInit {
   travelCreditAmount: number = 0;
   otherCreditAmount: number = 0;
 
-  constructor(private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
+  constructor(private authService: AuthService, private store: Store<{ user: initalUserStateInterface }>, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
 
   async ngOnInit() {
     this.store.select('user').subscribe(async (data: any) => {
       localStorage.setItem('user', JSON.stringify(data));
       this.user = data;
       [this.account] = data.accounts.filter((acc: any) => acc.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
-      this.transactions = [...this.account.transactions] as any[];
+      this.transactions = [...this.account?.transactions] as any[];
       this.initializeData();
       await this.firestoreService.updateDoc(data!.Uid!, data);
     });
 
+    console.log('profile', await this.authService.getProfile());
   }
 
   setProfileModelFlag(flag: boolean) {

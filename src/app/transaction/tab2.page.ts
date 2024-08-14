@@ -34,6 +34,7 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
   transactionMode = transactionMode;
   transaction!: FormGroup<any>;
   cdate: any;
+  smsId: any;
 
   constructor(private formBuilder: FormBuilder, private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestore: Firestore, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
 
@@ -60,11 +61,16 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
     }]);
     this.transactionService.transaction.pipe().subscribe((trans: any) => {
       if (JSON.stringify(trans) !== "{}") {
+        this.smsId = trans.smsId;
+        delete trans.smsId;
         this.transaction.setValue({ ...trans, merchant: trans.merchant || null, createdAt: this.getCurrentDateString(trans.createdAt?.seconds!) });
       } else {
         this.resetForm();
       }
     });
+    this.store.select('user').subscribe((data) => {
+      this.user = data;
+    })
   }
 
   ngAfterViewInit() {
@@ -103,6 +109,18 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
       this.updateTransaction()
     } else {
       let newTransactionReq: any;
+      console.log(
+        this.transaction.controls['amount'].errors,
+        this.transaction.controls['account'].errors,
+        this.transaction.controls['merchant'].errors,
+        this.transaction.controls['body'].errors,
+        this.transaction.controls['category'].errors,
+        this.transaction.controls['updatedAt'].errors,
+        this.transaction.controls['mode'].errors,
+        this.transaction.controls['type'].errors,
+        this.transaction.controls['id'].errors,
+        this.transaction.controls['createdAt'].errors,
+      );
       if (this.transaction.valid) {
         if (this.transaction.controls['merchant'].value) {
           newTransactionReq = {
@@ -133,7 +151,20 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
         });
         this.transactionService.presentToast('Transaction added successfully');
         this.resetForm();
-        this.router.navigate(['tabs', 'home']);
+        if (this.smsId) {
+          let tmpList = [...this.user.smsList.filter((data: any) => {
+            if (data.id === this.smsId) {
+              return false;
+            } else {
+              return true;
+            }
+          })];
+          await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
+          this.smsId = null;
+          this.router.navigate(['tabs', 'smslog']);
+        } else {
+          this.router.navigate(['tabs', 'home']);
+        }
       } else {
         this.transactionService.presentToast('Transaction is not valid, check all fields')
       }
@@ -145,8 +176,8 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
     let updated: transactionInterface = {
       id: this.transaction.controls['id'].value,
       amount: this.transaction.controls['amount'].value,
-      account: this.transaction.controls['amount'].value,
-      body: this.transaction.controls['amount'].value,
+      account: this.transaction.controls['account'].value,
+      body: this.transaction.controls['body'].value,
       category: this.transaction.controls['category'].value,
       mode: this.transaction.controls['mode'].value,
       type: this.transaction.controls['type'].value,

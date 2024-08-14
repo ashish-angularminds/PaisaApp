@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
@@ -13,19 +13,21 @@ import { initalUserStateInterface } from 'src/app/store/type/InitialUserState.in
   styleUrls: ['./explore-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExploreContainerComponent {
+export class ExploreContainerComponent implements OnInit {
 
-  constructor(private router: Router, private loadingcontroller: LoadingController) { }
+  constructor(private router: Router, private loadingcontroller: LoadingController, private authService: AuthService) { }
 
   @Output() setprofileflagfromchild = new EventEmitter<boolean>();
   user: any;
-
+  nameFlag = true;
+  emailFlag = true;
+  phoneFlag = true;
   public actionSheetButtons = [
     {
       text: 'Logout',
       role: 'destructive',
       data: {
-        action: 'delete',
+        action: 'logout',
       },
     },
     {
@@ -44,15 +46,17 @@ export class ExploreContainerComponent {
   async logout(event: any) {
     let loader = this.loadingcontroller.create();
     (await loader).present();
-    if (event.detail.data.action === 'delete') {
+    if (event.detail.data.action === 'logout') {
       localStorage.removeItem('profile');
       localStorage.removeItem('user');
+      await this.authService.signOut();
       this.setprofileflagfromchild.next(false);
       setTimeout(async () => {
         (await loader).dismiss();
         this.router.navigate(['/signin']);
       }, 0);
     }
+    (await loader).dismiss();
   }
 
 }

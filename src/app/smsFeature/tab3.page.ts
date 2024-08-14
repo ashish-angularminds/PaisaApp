@@ -23,10 +23,17 @@ export class Tab3Page implements OnInit {
 
   public resetActionSheetButtons = [
     {
-      text: 'Reset',
+      text: 'Monthly Reset',
       role: 'destructive',
       data: {
-        action: 'reset',
+        action: 'monthly-reset',
+      },
+    },
+    {
+      text: 'Complete Reset',
+      role: 'destructive',
+      data: {
+        action: 'complete-reset',
       },
     },
     {
@@ -156,17 +163,15 @@ export class Tab3Page implements OnInit {
       }
       this.deleteTransaction(newtransaction.id);
       await this.store.dispatch(userActions.addTransaction(newTransactionReq));
+      this.transactionService.presentToast('Transaction is add from SMS list successfully');
     }
   }
 
   editTransaction(newtransaction: any) {
     let newTransactionReq = {
-      transaction: {
-        amount: Number(newtransaction?.amount), account: newtransaction?.account,
-        type: newtransaction?.type, id: uuidv4(), mode: newtransaction?.mode, category: newtransaction?.category, merchant: newtransaction?.merchant,
-        createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }, body: newtransaction?.body
-      },
-      month: new Date(newtransaction?.createdAt.seconds).getMonth() + 1, year: new Date(newtransaction?.createdAt.seconds).getFullYear()
+      smsId: newtransaction.id, id: null, amount: Number(newtransaction?.amount), account: newtransaction?.account,
+      type: newtransaction?.type, mode: newtransaction?.mode, category: newtransaction?.category, merchant: newtransaction?.merchant,
+      createdAt: newtransaction?.createdAt, updatedAt: { seconds: Date.now() }, body: newtransaction?.body
     };
     this.transactionService.transaction.next(newTransactionReq);
     this.router.navigate(['tabs', 'addtransaction']);
@@ -181,12 +186,17 @@ export class Tab3Page implements OnInit {
       }
     })];
     await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
+    this.transactionService.presentToast('Transaction is deleted from SMS list successfully');
   }
 
   async resetList(event: any) {
-    this.transactionService.presentToast(JSON.stringify(event.detail, null, 2));
-    if (event.detail.data.action === "reset") {
+    if (event.detail.data.action === "complete-reset") {
       await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: Date.now() } } }));
+      this.transactionService.presentToast("SMS list is reset and set to current date");
+    } else if (event.detail.data.action === "monthly-reset") {
+      await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: new Date(`${new Date().getMonth() + 1}/1/${new Date().getFullYear()}`).valueOf() } } }));
+      this.transactionService.presentToast("SMS list is reset and set to months first day");
     }
+    this.loadData();
   }
 }

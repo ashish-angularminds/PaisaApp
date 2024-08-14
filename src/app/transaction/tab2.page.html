@@ -48,7 +48,6 @@
         placeholder="Enter Account Name"
         type="string"
         label="Account :"
-        maxlength="6"
         [formControlName]="'account'"
       ></ion-input>
     </ion-item>
@@ -60,16 +59,6 @@
         type="string"
         label="Merchant :"
         formControlName="merchant"
-      ></ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-input
-        mode="md"
-        placeholder="Enter Body Name"
-        type="string"
-        label="Body :"
-        [formControlName]="'body'"
       ></ion-input>
     </ion-item>
 
@@ -122,6 +111,7 @@
         >
       </ion-select>
     </ion-item>
+
     <ion-item *ngIf="transaction.controls['createdAt']">
       <ion-label>Date :</ion-label>
       <ion-datetime-button datetime="datetime"></ion-datetime-button>
@@ -135,6 +125,15 @@
           ></ion-datetime>
         </ng-template>
       </ion-modal>
+    </ion-item>
+
+    <ion-item>
+      <ion-textarea
+        label="Body :"
+        placeholder="Enter Body Name"
+        [autoGrow]="true"
+        [formControlName]="'body'"
+      ></ion-textarea>
     </ion-item>
   </ion-list>
 </ion-content>

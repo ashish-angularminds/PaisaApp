@@ -7,73 +7,94 @@
     src="../../../assets/person.png"
   ></ion-img>
 </div>
-<ion-list lines="full" class="ion-padding-top">
-  <ion-item>
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <small>Name</small>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>
-          <ion-text>{{ user.displayName }}</ion-text>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-item>
-  <ion-item>
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <small>Email</small>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>
-          <ion-text>{{ user.email }}</ion-text>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-item>
-  <ion-item>
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <small>Phone</small>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>
-          <ion-text>{{ user.phoneNumber || "NAN" }}</ion-text>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-item>
-</ion-list>
-<div class="ion-padding ion-text-center">
-  <ion-button
-    size="large"
-    fill="outline"
-    color="dark"
-    shape="round"
-    [disabled]="true"
-    >Submit</ion-button
+<div class="ion-padding">
+  <ion-list lines="full" [inset]="true">
+    <ion-item style="--padding-top: 16px; --padding-bottom: 16px">
+      <ion-icon
+        class="ion-padding-horizontal"
+        slot="start"
+        name="person-outline"
+        aria-hidden="true"
+      ></ion-icon>
+      <ion-input [disabled]="nameFlag" [(ngModel)]="user.displayName">
+      </ion-input>
+      <ion-button fill="clear" slot="end" (click)="nameFlag = !nameFlag">
+        <ion-icon
+          slot="icon-only"
+          name="color-wand-outline"
+          aria-hidden="true"
+        ></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item style="--padding-top: 16px; --padding-bottom: 16px">
+      <ion-icon
+        class="ion-padding-horizontal"
+        slot="start"
+        name="mail-outline"
+        aria-hidden="true"
+      ></ion-icon>
+      <ion-input [disabled]="emailFlag" [(ngModel)]="user.email"> </ion-input>
+      <ion-button fill="clear" slot="end" (click)="emailFlag = !emailFlag">
+        <ion-icon
+          slot="icon-only"
+          name="color-wand-outline"
+          aria-hidden="true"
+        ></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item style="--padding-top: 16px; --padding-bottom: 16px">
+      <ion-icon
+        class="ion-padding-horizontal"
+        slot="start"
+        name="phone-portrait-outline"
+        aria-hidden="true"
+      ></ion-icon>
+      @if (!phoneFlag) {
+      <ion-input
+        [disabled]="phoneFlag"
+        type="tel"
+        [max]="10"
+        [(ngModel)]="user.phoneNumber"
+      >
+      </ion-input>
+      } @else {
+      <ion-input [disabled]="true" value="NaN"> </ion-input>
+      }
+      <ion-button fill="clear" slot="end" (click)="phoneFlag = !phoneFlag">
+        <ion-icon
+          slot="icon-only"
+          name="color-wand-outline"
+          aria-hidden="true"
+        ></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+  <div
+    style="display: grid"
+    class="ion-justify-content-center ion-margin-vertical"
   >
-</div>
-<ion-list style="background: transparent" lines="full">
-  <ion-item color="light" style="--ion-color-base: #1110 !important">
-    <ion-button id="open-action-sheet" fill="clear" color="dark"
-      ><b>Logout</b></ion-button
+    <ion-button
+      [disabled]="nameFlag && phoneFlag && emailFlag"
+      fill="solid"
+      color="dark"
+      shape="round"
+      size="default"
+      >Submit</ion-button
     >
-    <ion-action-sheet
-      trigger="open-action-sheet"
-      header="Are you sure?"
-      [buttons]="actionSheetButtons"
-      (didDismiss)="logout($event)"
-    ></ion-action-sheet>
-  </ion-item>
-  <ion-item color="light" style="--ion-color-base: #1110 !important">
-    <ion-button fill="clear" color="dark"><b>Delete Account</b></ion-button>
-  </ion-item>
-</ion-list>
+  </div>
+
+  <ion-list [inset]="true">
+    <ion-item id="open-action-sheet" [button]="true">
+      <ion-label>Logout</ion-label>
+    </ion-item>
+    <ion-item [button]="true">
+      <ion-label>Delete Account</ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-action-sheet
+    trigger="open-action-sheet"
+    header="Are you sure?"
+    [buttons]="actionSheetButtons"
+    (didDismiss)="logout($event)"
+  ></ion-action-sheet>
+</div>
