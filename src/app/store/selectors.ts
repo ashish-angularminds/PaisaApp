@@ -1,11 +1,14 @@
 import { createSelector } from "@ngrx/store";
+import { accountsInterface } from "./type/account.interface";
 import { initalUserStateInterface } from "./type/InitialUserState.interface";
 
-export const selectFeature = (state: { user: initalUserStateInterface }) => state.user
+const tmpDate = new Date();
 
-export const selectUid = createSelector(
+export const selectFeature = (state: initalUserStateInterface) => state;
+
+export const selectState = createSelector(
   selectFeature,
-  (state) => state.Uid
+  (state) => state
 )
 
 export const selectAccounts = createSelector(
@@ -13,7 +16,17 @@ export const selectAccounts = createSelector(
   (state) => state.accounts
 )
 
-export const selectLastSMSUpdate = createSelector(
+export const selectCurrentAccount = createSelector(
   selectFeature,
-  (state) => state.lastSMSUpdate
+  (state) => Object.values(state.accounts).filter((data: accountsInterface) => (data.month === (tmpDate.getMonth() + 1) && data.year === tmpDate.getFullYear()))
+)
+
+export const selectMetadata = createSelector(
+  selectFeature,
+  (state) => state.metadata
+)
+
+export const selectSMS = createSelector(
+  selectFeature,
+  (state) => state.sms
 )

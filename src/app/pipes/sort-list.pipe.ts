@@ -2,12 +2,12 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'sortList',
-  standalone: true
+  standalone: true,
 })
 export class SortListPipe implements PipeTransform {
 
-  transform(value: any, ...args: unknown[]): any {
-    let tmpList = [...value];
+  transform(value: [], ...args: unknown[]): any {
+    let tmpList = value || [];
     return tmpList.sort((a: any, b: any) => {
       const aDate: any = new Date(b?.createdAt?.seconds);
       const bDate: any = new Date(a?.createdAt?.seconds);

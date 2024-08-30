@@ -39,15 +39,15 @@
           <ion-text>
             <h5 class="ion-no-margin title-text">Total Credit</h5>
             <h5 class="ion-no-margin amount-text">
-              {{account.totalCredit}} / {{account.totalCredit -
-              account.totalSpent}}
+              {{account?.totalCredit}} / {{account?.totalCredit -
+              account?.totalSpent}}
             </h5>
           </ion-text>
         </ion-col>
         <ion-col size="3.5" class="ion-padding sm-card">
           <ion-text>
             <h5 class="ion-no-margin title-text">Total Spend</h5>
-            <h5 class="ion-no-margin amount-text">{{account!.totalSpent!}}</h5>
+            <h5 class="ion-no-margin amount-text">{{account?.totalSpent}}</h5>
           </ion-text>
         </ion-col>
         <ion-col size="3.5" class="ion-padding sm-card">
@@ -112,7 +112,7 @@
         <ion-col>
           <ion-list [inset]="false" lines="full" class="transaction-list">
             <ion-item-sliding
-              *ngFor="let transactionLog of account.transactions|sortList"
+              *ngFor="let transactionLog of account?.transactions|sortList"
             >
               <ion-item [button]="true" [id]="transactionLog.id">
                 <ion-icon

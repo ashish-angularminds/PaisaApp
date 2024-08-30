@@ -4,23 +4,22 @@ import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { provideStore, StoreModule } from '@ngrx/store';
+import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth'
 import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from 'src/environments/environment';
 import { ReactiveFormsModule } from '@angular/forms';
-import { userReducer } from './store/reducers';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getDatabase, provideDatabase } from '@angular/fire/database';
-import { SortListPipe } from './pipes/sort-list.pipe';
+import { accountReducer, metadataReducer, smsReducer } from './store/reducers';
 
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot({ animated: true }), AppRoutingModule, ReactiveFormsModule,
-    StoreModule.forRoot({ user: userReducer }),
+    StoreModule.forRoot({ metadata: metadataReducer, sms: smsReducer, accounts: accountReducer }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
       logOnly: true,

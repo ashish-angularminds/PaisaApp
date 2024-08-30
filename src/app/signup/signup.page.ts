@@ -5,9 +5,11 @@ import { AuthService } from '../services/auth.service';
 import { FirebaseError } from 'firebase/app';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { userActions } from '../store/action';
 import { FirestoreService } from '../services/firestore.service';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
+import { accountActions, metadataActions, smsActions } from '../store/action';
+import { selectState } from '../store/selectors';
+import { IndexdbService } from '../services/indexdb.service';
 
 @Component({
   selector: 'app-signup',
@@ -19,8 +21,8 @@ export class SignupPage implements OnInit {
   user: any;
   signupForm!: FormGroup<any>;
   constructor(private formBuilder: FormBuilder, private loadingCrtl: LoadingController,
-    private authServices: AuthService, private toastController: ToastController, private router: Router, private store: Store<{ user: initalUserStateInterface }>,
-    private firestoreService: FirestoreService) { }
+    private authServices: AuthService, private toastController: ToastController, private router: Router, private store: Store<initalUserStateInterface>,
+    private firestoreService: FirestoreService, private indexdbService: IndexdbService) { }
 
   ngOnInit() {
     this.signupForm = this.formBuilder.group({
@@ -47,17 +49,18 @@ export class SignupPage implements OnInit {
       await this.authServices.registerUser(this.signupForm.controls['email'].value, this.signupForm.controls['password'].value).then(
         async (data: any) => {
           localStorage.setItem('profile', JSON.stringify(await data.user?.providerData[0]));
-          data.user?.updateProfile({ displayName: this.signupForm.controls['fullname'].value });
-          this.store.dispatch(userActions.createUser({ userData: { accounts: [], lastSMSUpdate: { seconds: Date.parse(new Date(`${tmpDate.getMonth() + 1}/1/${tmpDate.getFullYear()}`).toISOString()) }, Uid: data.user!.uid, creditSMSFlag: false, debitSMSFlag: false, smsList: [] } }));
-          this.store.dispatch(userActions.createAccount({
+          await data.user?.updateProfile({ displayName: this.signupForm.controls['fullname'].value });
+          let user = await data.user?.providerData[0];
+          user.uid = data.user!.uid;
+          await this.store.dispatch(metadataActions.set(user));
+          await this.store.dispatch(smsActions.set({ lastSMSUpdate: { seconds: Date.parse(new Date(`${tmpDate.getMonth() + 1}/1/${tmpDate.getFullYear()}`).toISOString()) }, creditSMSFlag: false, debitSMSFlag: false, smsList: [] }));
+          await this.store.dispatch(accountActions.createAccount({
             account:
-              { month: (new Date().getMonth()) + 1, year: new Date().getFullYear(), savings: 0, totalCredit: 0, totalSpent: 0, transactions: [] }
+              { month: (tmpDate.getMonth()) + 1, year: tmpDate.getFullYear(), savings: 0, totalCredit: 0, totalSpent: 0, transactions: [] }
           }));
-          let userData!: initalUserStateInterface;
-          this.store.select('user').subscribe((data) => userData = data);
-          this.firestoreService.addDoc(userData, data.user!.uid);
-          this.store.select('user').subscribe((data) => {
-            localStorage.setItem('user', JSON.stringify(data));
+          await this.store.select(selectState).subscribe((user) => {
+            this.indexdbService.set({ uid: data.user!.uid, ...user }, 'put');
+            this.firestoreService.addDoc(user, data.user!.uid);
           });
           (await loader).dismiss();
           this.presentToast('Registration successful');

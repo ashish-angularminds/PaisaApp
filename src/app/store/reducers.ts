@@ -1,132 +1,151 @@
-import { createFeature, createReducer, on } from "@ngrx/store";
-import { initalUserStateInterface } from "./type/InitialUserState.interface";
-import { userActions } from "./action";
-import { accounts } from "./type/account.interface";
+import { createFeature, createReducer, on, Store } from "@ngrx/store";
+import { initalUserStateInterface, metadataInterface, smsInterface } from "./type/InitialUserState.interface";
+import { accountActions, metadataActions, smsActions } from "./action";
+import { accountsInterface } from "./type/account.interface";
 import { transactionInterface, transactionType } from "./type/transaction.interface";
+import { inject } from "@angular/core";
+import { IndexdbService } from "../services/indexdb.service";
 
-let lS: initalUserStateInterface = JSON.parse(localStorage.getItem('user') || "{}");
-
-const initaluserstate: initalUserStateInterface = {
-  accounts: lS.accounts || [],
-  lastSMSUpdate: lS.lastSMSUpdate || undefined,
-  Uid: lS.Uid || undefined,
-  creditSMSFlag: lS.creditSMSFlag || false,
-  debitSMSFlag: lS.debitSMSFlag || false,
-  smsList: lS.smsList || []
+const accountsArray: accountsInterface[] = [];
+const metadata: metadataInterface = {
+  displayName: null,
+  email: null,
+  phoneNumber: null,
+  photoURL: null,
+  providerId: null,
+  uid: null
+}
+const sms: any = {
+  lastSMSUpdate: undefined,
+  creditSMSFlag: false,
+  debitSMSFlag: false,
+  smsList: []
 }
 
-function addTransaction(_account: accounts, transaction: transactionInterface): accounts {
-  let account = { ..._account };
-  if (transaction.type === transactionType.Credit) {
-    account.totalCredit = account.totalCredit! + transaction.amount!;
-  } else {
-    account.totalSpent = account.totalSpent! + transaction.amount!;
-  }
-  return { ...account, transactions: [...account.transactions!, transaction] }
+function deleteType(action: any) {
+  let tmp = { ...action };
+  delete tmp.type;
+  return tmp;
 }
 
-function updateTransaction(_account: accounts, transactionId: string, updatedtransaction: transactionInterface): accounts {
-  let account = { ..._account };
-  account.transactions = account.transactions?.map((trans) => {
-    if (trans.id === transactionId) {
-      if (trans.type === updatedtransaction.type) {
-        if (trans.type === transactionType.Credit) {
-          account.totalCredit = (account.totalCredit! - trans.amount!) + updatedtransaction.amount!;
+const metadataFeature = createFeature({
+  name: 'METADATA',
+  reducer: createReducer(metadata,
+    on(metadataActions.set, (state, action) => ({
+      ...state,
+      ...deleteType(action)
+    })),
+    on(metadataActions.reset, (state) => ({
+      ...state,
+      displayName: null,
+      email: null,
+      phoneNumber: null,
+      photoURL: null,
+      providerId: null,
+      uid: null
+    }))
+  )
+});
+const smsFeature = createFeature({
+  name: 'SMS',
+  reducer: createReducer(sms,
+    on(smsActions.set, (state, action) => ({
+      ...state,
+      ...deleteType(action)
+    })),
+    on(smsActions.reset, () => ({
+      creditSMSFlag: false,
+      debitSMSFlag: false,
+      lastSMSUpdate: { seconds: 0 },
+      smsList: [],
+    })),
+  )
+})
+const accountFeature = createFeature({
+  name: 'ACCOUNT',
+  reducer: createReducer(accountsArray,
+    on(accountActions.set, (state, action) => ({
+      ...action.accounts
+    })),
+    on(accountActions.reset, () => ({
+      ...[]
+    })),
+    on(accountActions.createAccount, (state, action) => ({
+      ...[...Object.values(state), action.account],
+    })),
+    on(accountActions.updateAccount, (state, action) => ({
+      ...Object.values(state).map((data: accountsInterface) => (data.month === action.month && data.year === action.year) ? deleteType(action) : data)
+    })),
+    on(accountActions.deleteAccount, (state, action) => ({
+      ...Object.values(state).filter((data) => !(data.month === action.month && data.year === action.year)),
+    })),
+    on(accountActions.addTransaction, (state, action) => ({
+      ...Object.values(state).map((data: any) => {
+        if (data.month === action.month && data.year === action.year) {
+          let tmp = { ...data };
+          tmp.transactions = [...tmp.transactions, action.transaction];
+          if (action.transaction.type === transactionType.Credit) {
+            tmp.totalCredit = tmp.totalCredit! + action.transaction.amount!;
+          } else {
+            tmp.totalSpent = tmp.totalSpent! + action.transaction.amount!;
+          }
+          return tmp;
         } else {
-          account.totalSpent = (account.totalSpent! - trans.amount!) + updatedtransaction.amount!;
+          return data;
         }
-      } else {
-        if (trans.type === transactionType.Credit) {
-          account.totalCredit = account.totalCredit! - trans.amount!;
-          account.totalSpent = account.totalSpent! + (updatedtransaction.amount! ? updatedtransaction.amount! : trans.amount!);
+      }),
+    })),
+    on(accountActions.updateTransaction, (state, action) => ({
+      ...Object.values(state).map((data: accountsInterface) => {
+        if (data.month === action.month && data.year === action.year) {
+          let account = { ...data };
+          account.transactions = account.transactions?.map((trans: transactionInterface) => {
+            if (trans.id === action.transactionId) {
+              if (trans.type !== action.newtransaction.type && action.newtransaction.type! < 2) {
+                if (trans.type === transactionType.Credit) {
+                  account.totalCredit = account.totalCredit! - trans.amount!;
+                  account.totalSpent = account.totalSpent! + (action.newtransaction.amount! ? action.newtransaction.amount! : trans.amount!);
+                } else {
+                  account.totalSpent = account.totalSpent! - trans.amount!;
+                  account.totalCredit = account.totalCredit! + (action.newtransaction.amount! ? action.newtransaction.amount! : trans.amount!);
+                }
+              } else {
+                if (trans.type === transactionType.Credit) {
+                  account.totalCredit = (account.totalCredit! - trans.amount!) + action.newtransaction.amount!;
+                } else {
+                  account.totalSpent = (account.totalSpent! - trans.amount!) + action.newtransaction.amount!;
+                }
+              }
+              return { ...trans, ...action.newtransaction }
+            } else {
+              return trans;
+            }
+          })
+          return account;
         } else {
-          account.totalSpent = account.totalSpent! - trans.amount!;
-          account.totalCredit = account.totalCredit! + (updatedtransaction.amount! ? updatedtransaction.amount! : trans.amount!);
+          return data;
         }
-      }
-      return { ...trans, ...updatedtransaction }
-    } else {
-      return trans;
-    }
-  })
-  return { ...account }
-}
-
-function deleteTransaction(_account: accounts, transactionId: string): accounts {
-  let account = { ..._account };
-  let newtransactions = account!.transactions!.filter((trans) => trans.id !== transactionId);
-  let tmptransaction = account!.transactions!.find((data) => data.id === transactionId);
-  if (tmptransaction!.type === transactionType.Credit) {
-    account = { ...account, totalCredit: account.totalCredit! - tmptransaction!.amount! }
-  } else {
-    account = { ...account, totalSpent: account.totalSpent! - tmptransaction!.amount! }
-  }
-  return { ...account, transactions: newtransactions }
-}
-
-function curdTransaction(crud: any, accounts: accounts[], month: number, year: number, transactionId?: string, transaction?: transactionInterface): accounts[] {
-  return accounts.map((data: accounts) => {
-    if (data.month === month && data.year === year) {
-      if (crud === 'add') {
-        return addTransaction(data, transaction!);
-      } else if (crud === 'delete') {
-        return data.transactions?.length! > 0 ? deleteTransaction(data, transactionId!) : data;
-      } else {
-        return updateTransaction(data, transactionId!, transaction!);
-      }
-    } else {
-      return data;
-    }
-  });
-}
-
-const userFeature = createFeature({
-  name: 'user',
-  reducer: createReducer(
-    initaluserstate,
-    on(userActions.init, (state, action) => ({
-      ...state,
-      ...action.user,
+      }),
     })),
-    on(userActions.createUser, (state, action) => ({
-      ...state,
-      ...action.userData,
-    })),
-    on(userActions.deleteUser, (state) => ({
-      ...state,
-      accounts: [],
-      lastSMSUpdate: { seconds: (Date.parse((new Date().setUTCDate(1)).toString())) },
-      Uid: undefined,
-    })),
-    on(userActions.updateUser, (state, action) => ({
-      ...state,
-      ...action.user
-    })),
-    on(userActions.createAccount, (state, action) => ({
-      ...state,
-      accounts: [...state.accounts, action.account],
-    })),
-    on(userActions.updateAccount, (state, action) => ({
-      ...state,
-      accounts: action.accounts,
-    })),
-    on(userActions.deleteAccount, (state, action) => ({
-      ...state,
-      accounts: state.accounts.filter((data) => data.month !== action.month && data.year !== action.year),
-    })),
-    on(userActions.addTransaction, (state, action) => ({
-      ...state,
-      accounts: curdTransaction('add', state.accounts, action.month, action.year, undefined, action.transaction),
-    })),
-    on(userActions.updateTransaction, (state, action) => ({
-      ...state,
-      accounts: curdTransaction('update', state.accounts, action.month, action.year, action.transactionId, action.newtransaction),
-    })),
-    on(userActions.deleteTransaction, (state, action) => ({
-      ...state,
-      accounts: curdTransaction('delete', state.accounts, action.month, action.year, action.transactionId),
+    on(accountActions.deleteTransaction, (state, action) => ({
+      ...Object.values(state).map((data: accountsInterface) => {
+        if (data.month === action.month && data.year === action.year) {
+          let account = { ...data };
+          let newtransactions = account!.transactions!.filter((trans) => trans.id !== action.transactionId);
+          let tmptransaction = account!.transactions!.find((data) => data.id === action.transactionId);
+          if (tmptransaction!.type === transactionType.Credit) {
+            account = { ...account, totalCredit: account.totalCredit! - tmptransaction!.amount! }
+          } else {
+            account = { ...account, totalSpent: account.totalSpent! - tmptransaction!.amount! }
+          }
+          return { ...account, transactions: newtransactions }
+        } else {
+          return data;
+        }
+      }),
     })),
   )
 });
-
-export const { name: userFeatureKey, reducer: userReducer, selectAccounts } = userFeature
+export const { name: metadataFeatureKey, reducer: metadataReducer } = metadataFeature;
+export const { name: smsFeatureKey, reducer: smsReducer } = smsFeature;
+export const { name: accountFeatureKey, reducer: accountReducer } = accountFeature;

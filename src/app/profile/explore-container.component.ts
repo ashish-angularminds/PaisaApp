@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
@@ -6,6 +6,7 @@ import { Store } from '@ngrx/store';
 import { AuthService } from 'src/app/services/auth.service';
 import { FirestoreService } from 'src/app/services/firestore.service';
 import { initalUserStateInterface } from 'src/app/store/type/InitialUserState.interface';
+import { IndexdbService } from '../services/indexdb.service';
 
 @Component({
   selector: 'app-profile',
@@ -15,10 +16,19 @@ import { initalUserStateInterface } from 'src/app/store/type/InitialUserState.in
 })
 export class ExploreContainerComponent implements OnInit {
 
-  constructor(private router: Router, private loadingcontroller: LoadingController, private authService: AuthService) { }
+  constructor(private router: Router, private loadingcontroller: LoadingController, private authService: AuthService, private indexdbService: IndexdbService,
+    private changeDetector: ChangeDetectorRef
+  ) { }
 
   @Output() setprofileflagfromchild = new EventEmitter<boolean>();
-  user: any;
+  user: any = {
+    providerId: null,
+    uid: null,
+    displayName: null,
+    email: null,
+    phoneNumber: null,
+    photoURL: null
+  };
   nameFlag = true;
   emailFlag = true;
   phoneFlag = true;
@@ -40,15 +50,15 @@ export class ExploreContainerComponent implements OnInit {
   ];
 
   async ngOnInit() {
-    this.user = JSON.parse(localStorage.getItem('profile')!);
+    this.user = (await this.authService.getProfile())?.providerData[0];
+    this.changeDetector.detectChanges();
   }
 
   async logout(event: any) {
     let loader = this.loadingcontroller.create();
     (await loader).present();
     if (event.detail.data.action === 'logout') {
-      localStorage.removeItem('profile');
-      localStorage.removeItem('user');
+      this.indexdbService.clearAll();
       await this.authService.signOut();
       this.setprofileflagfromchild.next(false);
       setTimeout(async () => {

@@ -2,16 +2,18 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, OnDest
 import { Store } from '@ngrx/store';
 import { addDoc, collection, Firestore, updateDoc, doc } from '@angular/fire/firestore';
 import { FirestoreService } from '../services/firestore.service';
-import { userActions } from '../store/action'
 import { transactionInterface, transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
 import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { ToastController } from '@ionic/angular';
-import { accounts } from '../store/type/account.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionService } from '../services/transaction.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { filter, map, skip } from 'rxjs';
+import { accountsInterface } from '../store/type/account.interface';
+import { selectState } from '../store/selectors';
+import { accountActions, smsActions } from '../store/action';
+import { IndexdbService } from '../services/indexdb.service';
 
 @Component({
   selector: 'app-tab2',
@@ -26,7 +28,7 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
   addTransactionModelFlag = false;
   profileModelFlag = false;
   smsTransactionListModelFlag: boolean = false;
-  account!: accounts;
+  account!: accountsInterface;
   newDate = new Date();
   newDateEpoch = Date.now();
   transactionType = transactionType;
@@ -36,7 +38,8 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
   cdate: any;
   smsId: any;
 
-  constructor(private formBuilder: FormBuilder, private toastController: ToastController, private store: Store<{ user: initalUserStateInterface }>, private firestore: Firestore, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
+  constructor(private formBuilder: FormBuilder, private toastController: ToastController, private store: Store<initalUserStateInterface>,
+    private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService, private indexdbService: IndexdbService) { }
 
   ngOnInit() {
     this.transaction = this.formBuilder.group({
@@ -68,9 +71,11 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
         this.resetForm();
       }
     });
-    this.store.select('user').subscribe((data) => {
+    this.store.select(selectState).subscribe(async (data) => {
       this.user = data;
-    })
+      this.indexdbService.set({ uid: data.metadata.uid, ...data }, 'put');
+      await this.firestoreService.updateDoc(data.metadata.uid!, data);
+    });
   }
 
   ngAfterViewInit() {
@@ -109,18 +114,6 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
       this.updateTransaction()
     } else {
       let newTransactionReq: any;
-      console.log(
-        this.transaction.controls['amount'].errors,
-        this.transaction.controls['account'].errors,
-        this.transaction.controls['merchant'].errors,
-        this.transaction.controls['body'].errors,
-        this.transaction.controls['category'].errors,
-        this.transaction.controls['updatedAt'].errors,
-        this.transaction.controls['mode'].errors,
-        this.transaction.controls['type'].errors,
-        this.transaction.controls['id'].errors,
-        this.transaction.controls['createdAt'].errors,
-      );
       if (this.transaction.valid) {
         if (this.transaction.controls['merchant'].value) {
           newTransactionReq = {
@@ -144,22 +137,18 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
             month: new Date(this.transaction.controls['createdAt'].value).getMonth() + 1, year: new Date(this.transaction.controls['createdAt'].value).getFullYear()
           }
         }
-        this.store.dispatch(userActions.addTransaction(newTransactionReq));
-        this.store.select('user').subscribe(data => {
-          this.firestoreService.updateDoc(data.Uid!, data);
-          localStorage.setItem('user', JSON.stringify(data));
-        });
+        this.store.dispatch(accountActions.addTransaction(newTransactionReq));
         this.transactionService.presentToast('Transaction added successfully');
         this.resetForm();
         if (this.smsId) {
-          let tmpList = [...this.user.smsList.filter((data: any) => {
+          let tmpList = [...this.user.sms.smsList!.filter((data: any) => {
             if (data.id === this.smsId) {
               return false;
             } else {
               return true;
             }
           })];
-          await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
+          await this.store.dispatch(smsActions.set({ smsList: tmpList }));
           this.smsId = null;
           this.router.navigate(['tabs', 'smslog']);
         } else {
@@ -187,7 +176,7 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
     if (this.transaction.controls['merchant'].value) {
       updated.merchant = this.transaction.controls['merchant'].value;
     }
-    await this.store.dispatch(userActions.updateTransaction({ month: tmpDate.getMonth() + 1, newtransaction: updated, transactionId: this.transaction.controls['id'].value, year: tmpDate.getFullYear() }));
+    await this.store.dispatch(accountActions.updateTransaction({ month: tmpDate.getMonth() + 1, newtransaction: updated, transactionId: this.transaction.controls['id'].value, year: tmpDate.getFullYear() }));
     this.resetForm();
     this.router.navigate(['tabs', 'home']);
   }

@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ToastController, ToggleCustomEvent } from '@ionic/angular';
 import { Store } from '@ngrx/store';
 import { SMSInboxReader, SMSFilter, SMSObject } from 'capacitor-sms-inbox/dist/esm'
-import { userActions } from '../store/action';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { transactionCategory, transactionInterface, transactionMode, transactionType } from '../store/type/transaction.interface';
-import { selectUid } from '../store/selectors';
+import { selectState } from '../store/selectors';
 import { FirestoreService } from '../services/firestore.service';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionService } from '../services/transaction.service';
@@ -19,7 +18,7 @@ import { Router } from '@angular/router';
 })
 export class Tab3Page implements OnInit {
 
-  constructor(private store: Store<{ user: initalUserStateInterface }>, private firestoreService: FirestoreService, private transactionService: TransactionService, private router: Router, private toastController: ToastController) { }
+  constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService, private transactionService: TransactionService, private router: Router, private toastController: ToastController) { }
 
   public resetActionSheetButtons = [
     {
@@ -54,9 +53,9 @@ export class Tab3Page implements OnInit {
   merchantRegex = /\bto\b|\bat\b/i;
 
   async ngOnInit() {
-    this.store.select('user').subscribe(async (data) => {
+    this.store.select(selectState).subscribe(async (data) => {
       this.user = data;
-      await this.firestoreService.updateDoc(data!.Uid!, data);
+      // await this.firestoreService.updateDoc(data!.Uid!, data);
     });
     if ((await SMSInboxReader.checkPermissions()).sms !== "granted") {
       SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
@@ -71,15 +70,15 @@ export class Tab3Page implements OnInit {
 
   async loadData() {
     SMSInboxReader.getSMSList({ filter: { minDate: this.user.lastSMSUpdate.seconds } }).then(async (data) => {
-      await this.store.dispatch(userActions.updateUser({
-        user: {
-          lastSMSUpdate: { seconds: Date.now() },
-          smsList:
-            this.organizeData(data.smsList.filter((element: SMSObject) =>
-            (this.transactionRegex.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)
-              && /^((?!not completed).)*$/gmi.test(element.body) && /^((?!request).)*$/gmi.test(element.body))))
-        }
-      }));
+      // await this.store.dispatch(userActions.updateUser({
+      //   user: {
+      //     lastSMSUpdate: { seconds: Date.now() },
+      //     smsList:
+      //       this.organizeData(data.smsList.filter((element: SMSObject) =>
+      //       (this.transactionRegex.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)
+      //         && /^((?!not completed).)*$/gmi.test(element.body) && /^((?!request).)*$/gmi.test(element.body))))
+      //   }
+      // }));
     });
   }
 
@@ -128,9 +127,9 @@ export class Tab3Page implements OnInit {
 
   toggleStateChange(event: ToggleCustomEvent) {
     if (event.detail.value === "credit") {
-      this.store.dispatch(userActions.updateUser({ user: { creditSMSFlag: event.detail.checked } }));
+      // this.store.dispatch(userActions.updateUser({ user: { creditSMSFlag: event.detail.checked } }));
     } else {
-      this.store.dispatch(userActions.updateUser({ user: { debitSMSFlag: event.detail.checked } }));
+      // this.store.dispatch(userActions.updateUser({ user: { debitSMSFlag: event.detail.checked } }));
     }
   }
 
@@ -162,7 +161,7 @@ export class Tab3Page implements OnInit {
         }
       }
       this.deleteTransaction(newtransaction.id);
-      await this.store.dispatch(userActions.addTransaction(newTransactionReq));
+      // await this.store.dispatch(userActions.addTransaction(newTransactionReq));
       this.transactionService.presentToast('Transaction is add from SMS list successfully');
     }
   }
@@ -185,16 +184,16 @@ export class Tab3Page implements OnInit {
         return true;
       }
     })];
-    await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
+    // await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
     this.transactionService.presentToast('Transaction is deleted from SMS list successfully');
   }
 
   async resetList(event: any) {
     if (event.detail.data.action === "complete-reset") {
-      await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: Date.now() } } }));
+      // await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: Date.now() } } }));
       this.transactionService.presentToast("SMS list is reset and set to current date");
     } else if (event.detail.data.action === "monthly-reset") {
-      await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: new Date(`${new Date().getMonth() + 1}/1/${new Date().getFullYear()}`).valueOf() } } }));
+      // await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: new Date(`${new Date().getMonth() + 1}/1/${new Date().getFullYear()}`).valueOf() } } }));
       this.transactionService.presentToast("SMS list is reset and set to months first day");
     }
     this.loadData();

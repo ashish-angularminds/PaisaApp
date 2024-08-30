@@ -1,29 +1,34 @@
 import { createActionGroup, emptyProps, props } from "@ngrx/store";
-import { initalUserStateInterface } from "./type/InitialUserState.interface";
-import { accounts } from "./type/account.interface";
+import { initalUserStateInterface, metadataInterface, smsInterface } from "./type/InitialUserState.interface";
+import { accountsInterface } from "./type/account.interface";
 import { transactionInterface } from "./type/transaction.interface";
 
-// export const accountActions = createActionGroup({
-//   source: "account",
-//   events: {
-//     addTransaction: props<{ transaction: transaction, month: number, year: number }>(),
-//     updateTransaction: props<{ transaction: transaction, month: number, year: number }>(),
-//     deleteTransaction: props<{ transactionId: string, month: number, year: number }>(),
-//   }
-// })
-
-export const userActions = createActionGroup({
-  source: "user",
+export const metadataActions = createActionGroup({
+  source: "metadata",
   events: {
-    init: props<{ user: initalUserStateInterface }>(),
-    createUser: props<{ userData: initalUserStateInterface }>(),
-    deleteUser: emptyProps(),
-    updateUser: props<{ user: initalUserStateInterface | any }>(),
-    createAccount: props<{ account: accounts }>(),
+    set: props<metadataInterface>(),
+    reset: emptyProps(),
+  }
+});
+
+export const accountActions = createActionGroup({
+  source: "account",
+  events: {
+    set: props<{ accounts: accountsInterface[] }>(),
+    reset: emptyProps(),
+    createAccount: props<{ account: accountsInterface }>(),
     deleteAccount: props<{ month: number, year: number }>(),
-    updateAccount: props<{ accounts: accounts[] }>(),
+    updateAccount: props<accountsInterface>(),
     addTransaction: props<{ transaction: transactionInterface, month: number, year: number }>(),
     updateTransaction: props<{ transactionId: string, newtransaction: transactionInterface, month: number, year: number }>(),
     deleteTransaction: props<{ transactionId: string, month: number, year: number }>(),
   }
-})
+});
+
+export const smsActions = createActionGroup({
+  source: "sms",
+  events: {
+    set: props<smsInterface>(),
+    reset: emptyProps(),
+  }
+});

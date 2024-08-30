@@ -5,9 +5,11 @@ import { AuthService } from '../services/auth.service';
 import { Store } from '@ngrx/store';
 import { FirebaseError } from 'firebase/app';
 import { Router } from '@angular/router';
-import { userActions } from '../store/action';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { FirestoreService } from '../services/firestore.service';
+import { accountActions, metadataActions, smsActions } from '../store/action';
+import { selectState } from '../store/selectors';
+import { IndexdbService } from '../services/indexdb.service';
 
 @Component({
   selector: 'app-signin',
@@ -19,8 +21,8 @@ export class SigninPage implements OnInit {
 
   signinForm!: FormGroup;
   constructor(private formBuilder: FormBuilder, private loadingCrtl: LoadingController, private authServices: AuthService,
-    private store: Store<{ user: initalUserStateInterface }>, private toastController: ToastController, private router: Router,
-    private fireStoreService: FirestoreService) { }
+    private store: Store<initalUserStateInterface>, private toastController: ToastController, private router: Router,
+    private fireStoreService: FirestoreService, private indexdbService: IndexdbService) { }
 
   ngOnInit() {
     this.signinForm = this.formBuilder.group({
@@ -44,11 +46,12 @@ export class SigninPage implements OnInit {
     if (this.signinForm.valid) {
       await this.authServices.loginUserWithEamil(this.signinForm.controls['email'].value, this.signinForm.controls['password'].value).then(
         async (data: any) => {
-          let user: any = (await this.fireStoreService.getDoc(data.user!.uid)).data();
-          localStorage.setItem('profile', JSON.stringify(await data.user?.providerData[0]));
-          this.store.dispatch(userActions.createUser({ userData: user }));
-          this.store.select('user').subscribe((data) => {
-            localStorage.setItem('user', JSON.stringify(data));
+          let user: initalUserStateInterface | any = (await this.fireStoreService.getDoc(data.user!.uid)).data();
+          await this.store.dispatch(accountActions.set({ accounts: user.accounts }));
+          await this.store.dispatch(metadataActions.set(user.metadata));
+          await this.store.dispatch(smsActions.set(user.sms));
+          await this.store.select(selectState).subscribe((user) => {
+            this.indexdbService.set({ uid: data.user!.uid, ...user }, 'put');
           })
           this.presentToast('Login Successful');
           (await loader).dismiss();

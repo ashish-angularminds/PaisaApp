@@ -1,25 +1,27 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { FirestoreService } from '../services/firestore.service';
-import { userActions } from '../store/action'
-import { transactionInterface, transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
+import { transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
 import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
-import { ToastController } from '@ionic/angular';
 import { TransactionService } from '../services/transaction.service';
 import { AuthService } from '../services/auth.service';
+import { selectState } from '../store/selectors';
+import { accountActions, metadataActions, smsActions } from '../store/action';
+import { IndexdbService } from '../services/indexdb.service';
+import { LoadingController } from '@ionic/angular';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
-  // changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page implements OnInit, DoCheck {
 
   user!: initalUserStateInterface;
   transactionId: string = '';
   profileModelFlag = false;
-  account: any = { month: 0, savings: 0, totalCredit: 0, totalSpent: 0, transactions: [], year: 2024 };
+  account: any;
   newDate = new Date();
   transactionType = transactionType;
   transactionCategory = transactionCategory;
@@ -36,19 +38,37 @@ export class Tab1Page implements OnInit {
   travelCreditAmount: number = 0;
   otherCreditAmount: number = 0;
 
-  constructor(private authService: AuthService, private store: Store<{ user: initalUserStateInterface }>, private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService) { }
+  constructor(private authService: AuthService, private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService,
+    private router: Router, private transactionService: TransactionService, private indexdbService: IndexdbService,
+    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController) {
+    this.account = {
+      "month": 0,
+      "year": 0,
+      "savings": 0,
+      "totalCredit": 0,
+      "totalSpent": 0,
+      "transactions": []
+    }
+  }
 
   async ngOnInit() {
-    this.store.select('user').subscribe(async (data: any) => {
-      localStorage.setItem('user', JSON.stringify(data));
-      this.user = data;
-      [this.account] = data.accounts.filter((acc: any) => acc.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
-      this.transactions = [...this.account?.transactions] as any[];
-      this.initializeData();
-      await this.firestoreService.updateDoc(data!.Uid!, data);
+    let loader = this.loaderCtr.create();
+    (await loader).present();
+    await this.indexdbService.get().then(async (data: any) => {
+      await this.store.dispatch(metadataActions.set(data.metadata));
+      await this.store.dispatch(smsActions.set(data.sms));
+      await this.store.dispatch(accountActions.set({ accounts: data.accounts }));
     });
-
-    console.log('profile', await this.authService.getProfile());
+    this.store.select(selectState).subscribe(async (data: initalUserStateInterface) => {
+      this.user = data;
+      [this.account] = Object.values(data.accounts).filter((acc: any) => acc?.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
+      this.transactions = [...this.account?.transactions];
+      this.initializeData();
+      await this.firestoreService.updateDoc(data.metadata.uid!, data);
+      await this.indexdbService.set({ uid: this.user.metadata.uid, ...this.user }, 'put');
+      this.changeDetector.detectChanges();
+      (await loader).dismiss();
+    });
   }
 
   setProfileModelFlag(flag: boolean) {
@@ -118,11 +138,12 @@ export class Tab1Page implements OnInit {
         }
       }
     });
+    this.changeDetector.detectChanges();
   }
 
   async deleteTransaction(id: string, seconds: number) {
     let date = new Date(seconds);
-    await this.store.dispatch(userActions.deleteTransaction({ transactionId: id, month: date.getMonth() + 1, year: date.getFullYear() }));
+    await this.store.dispatch(accountActions.deleteTransaction({ transactionId: id, month: date.getMonth() + 1, year: date.getFullYear() }));
     this.transactionService.presentToast("Transaction deleted successfully");
     this.initializeData();
   }
@@ -130,6 +151,10 @@ export class Tab1Page implements OnInit {
   async updateTransaction(trans: any) {
     this.transactionService.transaction.next(trans);
     this.router.navigate(['tabs', 'addtransaction']);
+  }
+
+  ngDoCheck(): void {
+    console.log();
   }
 
 }
