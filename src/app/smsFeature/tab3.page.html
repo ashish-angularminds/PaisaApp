@@ -18,6 +18,7 @@
         [enableOnOffLabels]="true"
         color="success"
         class="credit"
+        [checked]="user.sms.creditSMSFlag"
       ></ion-toggle>
       <ion-toggle
         value="debit"
@@ -25,6 +26,7 @@
         class="ion-margin-horizontal debit"
         [enableOnOffLabels]="true"
         color="danger"
+        [checked]="user.sms.debitSMSFlag"
       ></ion-toggle>
       <ion-button id="reset-action-sheet">
         <ion-icon size="large" name="reload-circle-outline"></ion-icon>
@@ -40,33 +42,12 @@
 </ion-header>
 
 <ion-content class="ion-padding-bottom">
-  <!-- <p>Queue:</p> -->
-  <!-- <p *ngFor="let element of user.smsList">{{element.amount}}:</p> -->
-  <!--<p *ngFor="let element of transactionQueue">
-    id:{{ element?.id }}
-    <br />
-    amount:{{ element?.amount }}
-    <br />
-    merchant:{{ element?.merchant }}
-    <br />
-    account:{{ element?.account }}
-    <br />
-    type:{{ element?.type }}
-    <br />
-    mode:{{ element?.mode }}
-  </p>
-  <p>smsList:</p>
-  <p *ngFor="let element of smsList">{{ element |json }}</p> -->
-  <!-- <p>Credit:</p>
-  <p *ngFor="let element of creditSmsList">{{ element |json }}</p> -->
-
-  <ion-grid>
+  @if (permissionFlag) {
+  <ion-grid style="padding: 0 10px !important">
     <ion-row>
       <ion-col>
         <ion-list [inset]="false" lines="full" class="transaction-list">
-          <ion-item-sliding
-            *ngFor="let transactionLog of user.smsList|sortList"
-          >
+          <ion-item-sliding *ngFor="let transactionLog of smsList">
             <ion-item [button]="true" [id]="transactionLog.id">
               <ion-icon
                 class="ion-no-margin ion-margin-end"
@@ -95,10 +76,14 @@
                     >{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small
                   >
                   <br />
+                  @if (transactionLog?.type === 0) {
+                  <small>{{transactionLog?.category|category}}</small>
+                  } @else {
                   <small
                     >{{transactionLog?.category|category}} / {{
                     transactionLog?.merchant}}</small
                   >
+                  }
                 </ion-label>
 
                 <ion-label
@@ -129,7 +114,7 @@
                 expandable="true"
                 (click)="addTransaction(transactionLog)"
               >
-                <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+                <ion-icon slot="icon-only" name="checkmark"></ion-icon>
               </ion-item-option>
               <ion-item-option
                 color="primary"
@@ -141,7 +126,7 @@
               <ion-item-option
                 color="danger"
                 expandable="true"
-                (click)="deleteTransaction(transactionLog?.id)"
+                (click)="deleteTransaction(transactionLog.id!)"
               >
                 <ion-icon slot="icon-only" name="trash"></ion-icon>
               </ion-item-option>
@@ -151,4 +136,14 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  } @else {
+  <ion-grid style="padding: 0 10px !important">
+    <ion-row>
+      <ion-col class="ion-align-items-center">
+        <h1>We don't have the access to the your SMS</h1>
+        <button (click)="checkPermission()">Request</button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  }
 </ion-content>

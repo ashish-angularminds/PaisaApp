@@ -1,14 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { ToastController, ToggleCustomEvent } from '@ionic/angular';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { LoadingController, ToastController, ToggleCustomEvent } from '@ionic/angular';
 import { Store } from '@ngrx/store';
 import { SMSInboxReader, SMSFilter, SMSObject } from 'capacitor-sms-inbox/dist/esm'
-import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
+import { initalUserStateInterface, smsInterface } from '../store/type/InitialUserState.interface';
 import { transactionCategory, transactionInterface, transactionMode, transactionType } from '../store/type/transaction.interface';
 import { selectState } from '../store/selectors';
 import { FirestoreService } from '../services/firestore.service';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionService } from '../services/transaction.service';
 import { Router } from '@angular/router';
+import { accountActions, smsActions } from '../store/action';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-tab3',
@@ -18,9 +20,18 @@ import { Router } from '@angular/router';
 })
 export class Tab3Page implements OnInit {
 
-  constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService, private transactionService: TransactionService, private router: Router, private toastController: ToastController) { }
+  constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService, private transactionService: TransactionService,
+    private router: Router, private toastController: ToastController, private storageService: StorageService, private changeDetector: ChangeDetectorRef,
+    private loaderCtr: LoadingController) { }
 
   public resetActionSheetButtons = [
+    {
+      text: 'Refresh List',
+      role: 'destructive',
+      data: {
+        action: 'refresh',
+      },
+    },
     {
       text: 'Monthly Reset',
       role: 'destructive',
@@ -43,7 +54,7 @@ export class Tab3Page implements OnInit {
       },
     },
   ];
-  user: any;
+  user!: initalUserStateInterface;
   smsList: any = [];
   filter!: SMSFilter;
   transactionRegex = /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited|credited|withdrawn/i;
@@ -51,39 +62,45 @@ export class Tab3Page implements OnInit {
   creditRegex = /credited/i;
   amountRegex = /inr|by|rs/i;
   merchantRegex = /\bto\b|\bat\b/i;
+  permissionFlag = true;
 
   async ngOnInit() {
+    this.checkPermission();
     this.store.select(selectState).subscribe(async (data) => {
       this.user = data;
-      // await this.firestoreService.updateDoc(data!.Uid!, data);
+      this.smsList = [...(data.sms.smsList || [])];
+      await this.firestoreService.updateDoc(data.metadata.uid!, data);
+      await this.storageService.set(data);
     });
+    this.loadData();
+  }
+
+  async checkPermission() {
     if ((await SMSInboxReader.checkPermissions()).sms !== "granted") {
-      SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
+      await SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
         if (value === "granted") {
+          this.permissionFlag = true;
         }
-        this.loadData();
       });
     } else {
-      this.loadData();
+      this.permissionFlag = true;
     }
   }
 
   async loadData() {
-    SMSInboxReader.getSMSList({ filter: { minDate: this.user.lastSMSUpdate.seconds } }).then(async (data) => {
-      // await this.store.dispatch(userActions.updateUser({
-      //   user: {
-      //     lastSMSUpdate: { seconds: Date.now() },
-      //     smsList:
-      //       this.organizeData(data.smsList.filter((element: SMSObject) =>
-      //       (this.transactionRegex.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)
-      //         && /^((?!not completed).)*$/gmi.test(element.body) && /^((?!request).)*$/gmi.test(element.body))))
-      //   }
-      // }));
+    let tmpData: any;
+    let filter: SMSFilter = { minDate: this.user.sms.lastSMSUpdate?.seconds };
+    SMSInboxReader.getSMSList({ filter: filter }).then(async (data) => {
+      tmpData = this.organizeData(data.smsList.filter((element: SMSObject) =>
+      (this.transactionRegex.test(element.body) && /^((?!otp).)*$/gmi.test(element.body) && /^((?!statement).)*$/gmi.test(element.body)
+        && /^((?!not completed).)*$/gmi.test(element.body) && /^((?!request).)*$/gmi.test(element.body))));
+      await this.store.dispatch(smsActions.set({ lastSMSUpdate: { seconds: Date.now() }, smsList: [...tmpData] }));
+      this.changeDetector.detectChanges();
     });
   }
 
-  organizeData(smsList: any): any {
-    let tmpQueue = [...this.user.smsList];
+  organizeData(smsList: any): transactionInterface[] {
+    let tmpQueue = [...(this.user.sms.smsList || [])];
     for (let element of smsList) {
       let merchantFlag = false;
       let newtransaction: any = {
@@ -91,9 +108,9 @@ export class Tab3Page implements OnInit {
         merchant: '',
         createdAt: { seconds: element.date },
         updatedAt: { seconds: element.date },
-        amount: undefined,
+        amount: 0,
         type: this.creditRegex.test(element?.body) ? transactionType.Credit : transactionType.Debit,
-        mode: /upi/i.test(element?.body) ? transactionMode.UPI : /withdrawn|atm/i.test(element?.body) ? transactionMode.Debit_Card : /bank card|card/i.test(element?.body) ? transactionMode.Credit_Card : /bank/i.test(element?.body) ? transactionMode.UPI : undefined,
+        mode: /upi/i.test(element?.body) ? transactionMode.UPI : /withdrawn|atm/i.test(element?.body) ? transactionMode.Debit_Card : /bank card|card/i.test(element?.body) ? transactionMode.Credit_Card : /bank/i.test(element?.body) ? transactionMode.UPI : transactionMode.UPI,
         account: element?.address,
         category: /delicious/i.test(element?.body) ? transactionCategory.Food : /fueled/i.test(element?.body) ? transactionCategory.Travel : /hand-picked|market|fruits/i.test(element?.body) ? transactionCategory.Shopping : /medica|chemist|/i.test(element?.body) ? transactionCategory.Medical : transactionCategory.Other,
         body: element?.body
@@ -118,29 +135,34 @@ export class Tab3Page implements OnInit {
           }
         });
       }
-      if (newtransaction.amount) {
+      if (newtransaction.amount > 0) {
         tmpQueue.push(newtransaction);
       }
     }
     return tmpQueue;
   }
 
-  toggleStateChange(event: ToggleCustomEvent) {
+  async toggleStateChange(event: ToggleCustomEvent) {
+    let tmp = { ...this.user.sms };
     if (event.detail.value === "credit") {
-      // this.store.dispatch(userActions.updateUser({ user: { creditSMSFlag: event.detail.checked } }));
+      tmp.creditSMSFlag = event.detail.checked;
+      await this.store.dispatch(smsActions.set(tmp));
     } else {
-      // this.store.dispatch(userActions.updateUser({ user: { debitSMSFlag: event.detail.checked } }));
+      await this.store.dispatch(smsActions.set({ debitSMSFlag: event.detail.checked }));
     }
   }
 
   async addTransaction(newtransaction: any) {
     let newTransactionReq;
-    if (newtransaction?.amount > 0 && newtransaction?.account !== undefined &&
+    if (newtransaction?.amount > 0 &&
+      newtransaction?.account !== undefined &&
       newtransaction?.type < 2 &&
       newtransaction?.mode < 4 &&
       newtransaction?.category < 5 &&
       newtransaction?.createdAt !== undefined &&
-      newtransaction?.updatedAt !== undefined) {
+      newtransaction?.updatedAt !== undefined &&
+      newtransaction?.body &&
+      newtransaction?.merchant) {
       if (newtransaction?.type === transactionType.Debit) {
         newTransactionReq = {
           transaction: {
@@ -161,8 +183,10 @@ export class Tab3Page implements OnInit {
         }
       }
       this.deleteTransaction(newtransaction.id);
-      // await this.store.dispatch(userActions.addTransaction(newTransactionReq));
+      await this.store.dispatch(accountActions.addTransaction(newTransactionReq));
       this.transactionService.presentToast('Transaction is add from SMS list successfully');
+    } else {
+      this.transactionService.presentToast('Transaction is not complete/valid.')
     }
   }
 
@@ -177,25 +201,28 @@ export class Tab3Page implements OnInit {
   }
 
   async deleteTransaction(id: any) {
-    let tmpList = [...this.user.smsList.filter((data: any) => {
+    let tmpList = [...this.user.sms.smsList!.filter((data: any) => {
       if (data.id === id) {
         return false;
       } else {
         return true;
       }
     })];
-    // await this.store.dispatch(userActions.updateUser({ user: { smsList: tmpList } }));
+    await this.store.dispatch(smsActions.set({ smsList: tmpList }));
     this.transactionService.presentToast('Transaction is deleted from SMS list successfully');
   }
 
   async resetList(event: any) {
     if (event.detail.data.action === "complete-reset") {
-      // await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: Date.now() } } }));
+      await this.store.dispatch(smsActions.set({ smsList: [], lastSMSUpdate: { seconds: Date.now() } }));
+      this.loadData();
       this.transactionService.presentToast("SMS list is reset and set to current date");
     } else if (event.detail.data.action === "monthly-reset") {
-      // await this.store.dispatch(userActions.updateUser({ user: { smsList: [], lastSMSUpdate: { seconds: new Date(`${new Date().getMonth() + 1}/1/${new Date().getFullYear()}`).valueOf() } } }));
+      await this.store.dispatch(smsActions.set({ smsList: [], lastSMSUpdate: { seconds: new Date(`${new Date().getMonth() + 1}/1/${new Date().getFullYear()}`).valueOf() } }));
+      this.loadData();
       this.transactionService.presentToast("SMS list is reset and set to months first day");
+    } else if (event.detail.data.action === "refresh") {
+      this.loadData();
     }
-    this.loadData();
   }
 }

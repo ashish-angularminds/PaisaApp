@@ -1,4 +1,5 @@
 import { accountsInterface } from "./account.interface";
+import { transactionInterface } from "./transaction.interface";
 
 export interface initalUserStateInterface {
   accounts: accountsInterface[],
@@ -16,8 +17,8 @@ export interface metadataInterface {
 }
 
 export interface smsInterface {
-  lastSMSUpdate?: undefined | { seconds: number },
-  creditSMSFlag?: boolean,
-  debitSMSFlag?: boolean,
-  smsList?: any[]
+  lastSMSUpdate?: { seconds: number } | undefined,
+  creditSMSFlag?: boolean | undefined,
+  debitSMSFlag?: boolean | undefined,
+  smsList?: transactionInterface[] | undefined,
 }

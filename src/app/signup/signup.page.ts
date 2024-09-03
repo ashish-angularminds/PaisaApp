@@ -9,7 +9,7 @@ import { FirestoreService } from '../services/firestore.service';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { accountActions, metadataActions, smsActions } from '../store/action';
 import { selectState } from '../store/selectors';
-import { IndexdbService } from '../services/indexdb.service';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-signup',
@@ -22,13 +22,17 @@ export class SignupPage implements OnInit {
   signupForm!: FormGroup<any>;
   constructor(private formBuilder: FormBuilder, private loadingCrtl: LoadingController,
     private authServices: AuthService, private toastController: ToastController, private router: Router, private store: Store<initalUserStateInterface>,
-    private firestoreService: FirestoreService, private indexdbService: IndexdbService) { }
+    private firestoreService: FirestoreService, private storageService: StorageService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.signupForm = this.formBuilder.group({
       fullname: new FormControl(null, { validators: [Validators.required] }),
       email: new FormControl(null, { validators: [Validators.required, Validators.email] }),
       password: new FormControl(null, { validators: [Validators.required] })
+    });
+    await this.store.select(selectState).subscribe(async (user) => {
+      await this.storageService.set(user);
+      await this.firestoreService.addDoc(user, user.metadata.uid!);
     });
   }
 
@@ -58,10 +62,6 @@ export class SignupPage implements OnInit {
             account:
               { month: (tmpDate.getMonth()) + 1, year: tmpDate.getFullYear(), savings: 0, totalCredit: 0, totalSpent: 0, transactions: [] }
           }));
-          await this.store.select(selectState).subscribe((user) => {
-            this.indexdbService.set({ uid: data.user!.uid, ...user }, 'put');
-            this.firestoreService.addDoc(user, data.user!.uid);
-          });
           (await loader).dismiss();
           this.presentToast('Registration successful');
           this.router.navigate(['tabs/home']);

@@ -1,22 +1,24 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, DoCheck, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { FirestoreService } from '../services/firestore.service';
 import { transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
 import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { TransactionService } from '../services/transaction.service';
-import { AuthService } from '../services/auth.service';
 import { selectState } from '../store/selectors';
 import { accountActions, metadataActions, smsActions } from '../store/action';
-import { IndexdbService } from '../services/indexdb.service';
 import { LoadingController } from '@ionic/angular';
+import { StorageService } from '../services/storage.service';
+import { accountsInterface } from '../store/type/account.interface';
+import { AuthService } from '../services/auth.service';
+import { skip } from 'rxjs';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Tab1Page implements OnInit, DoCheck {
+export class Tab1Page implements OnInit, DoCheck, OnDestroy {
 
   user!: initalUserStateInterface;
   transactionId: string = '';
@@ -38,9 +40,9 @@ export class Tab1Page implements OnInit, DoCheck {
   travelCreditAmount: number = 0;
   otherCreditAmount: number = 0;
 
-  constructor(private authService: AuthService, private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService,
-    private router: Router, private transactionService: TransactionService, private indexdbService: IndexdbService,
-    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController) {
+  constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService,
+    private router: Router, private transactionService: TransactionService, private storageService: StorageService,
+    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController, private authService: AuthService) {
     this.account = {
       "month": 0,
       "year": 0,
@@ -52,22 +54,43 @@ export class Tab1Page implements OnInit, DoCheck {
   }
 
   async ngOnInit() {
-    let loader = this.loaderCtr.create();
-    (await loader).present();
-    await this.indexdbService.get().then(async (data: any) => {
+    let data = await this.storageService.get();
+    if (data) {
       await this.store.dispatch(metadataActions.set(data.metadata));
       await this.store.dispatch(smsActions.set(data.sms));
-      await this.store.dispatch(accountActions.set({ accounts: data.accounts }));
-    });
+      if ((Object.values(data.accounts)).filter((data: any) => data.month === (this.newDate.getMonth() + 1)).length === 0) {
+        let tmp: accountsInterface[] = Object.values(data.accounts);
+        tmp.push({
+          month: this.newDate.getMonth() + 1,
+          year: this.newDate.getFullYear(),
+          savings: 0,
+          totalCredit: 0,
+          totalSpent: 0,
+          transactions: []
+        })
+        await this.store.dispatch(accountActions.set({ accounts: tmp }));
+      } else {
+        await this.store.dispatch(accountActions.set({ accounts: data.accounts }));
+      }
+    }
+
     this.store.select(selectState).subscribe(async (data: initalUserStateInterface) => {
-      this.user = data;
-      [this.account] = Object.values(data.accounts).filter((acc: any) => acc?.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
-      this.transactions = [...this.account?.transactions];
-      this.initializeData();
-      await this.firestoreService.updateDoc(data.metadata.uid!, data);
-      await this.indexdbService.set({ uid: this.user.metadata.uid, ...this.user }, 'put');
-      this.changeDetector.detectChanges();
-      (await loader).dismiss();
+      if (data) {
+        this.user = { ...data };
+        [this.account] = Object.values(data.accounts).filter((acc: any) => acc?.month === this.newDate.getMonth() + 1 && acc.year === this.newDate.getFullYear());
+        if (this.account?.transactions) {
+          this.transactions = [...Object.values(this.account?.transactions)];
+          this.initializeData();
+        }
+        this.firestoreService.updateDoc(data.metadata.uid!, data).catch(async (error) => {
+          console.log(error);
+          await this.storageService.clearAll();
+          await this.authService.signOut();
+          this.router.navigate(['/signin'], { replaceUrl: true });
+        });
+        await this.storageService.set(this.user);
+        this.changeDetector.detectChanges();
+      }
     });
   }
 
@@ -149,12 +172,20 @@ export class Tab1Page implements OnInit, DoCheck {
   }
 
   async updateTransaction(trans: any) {
-    this.transactionService.transaction.next(trans);
+    let tmpTransaction = { ...trans };
+    if (!tmpTransaction.merchant) {
+      tmpTransaction.merchant = "NAN";
+    }
+    this.transactionService.transaction.next(tmpTransaction);
     this.router.navigate(['tabs', 'addtransaction']);
   }
 
   ngDoCheck(): void {
     console.log();
+  }
+
+  ngOnDestroy(): void {
+    console.log('destroy');
   }
 
 }

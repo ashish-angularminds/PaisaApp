@@ -9,7 +9,7 @@ import { initalUserStateInterface } from '../store/type/InitialUserState.interfa
 import { FirestoreService } from '../services/firestore.service';
 import { accountActions, metadataActions, smsActions } from '../store/action';
 import { selectState } from '../store/selectors';
-import { IndexdbService } from '../services/indexdb.service';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-signin',
@@ -22,9 +22,9 @@ export class SigninPage implements OnInit {
   signinForm!: FormGroup;
   constructor(private formBuilder: FormBuilder, private loadingCrtl: LoadingController, private authServices: AuthService,
     private store: Store<initalUserStateInterface>, private toastController: ToastController, private router: Router,
-    private fireStoreService: FirestoreService, private indexdbService: IndexdbService) { }
+    private fireStoreService: FirestoreService, private storageService: StorageService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.signinForm = this.formBuilder.group({
       email: new FormControl(null, { validators: [Validators.required, Validators.email] }),
       password: new FormControl(null, { validators: [Validators.required] })
@@ -45,17 +45,17 @@ export class SigninPage implements OnInit {
     (await loader).present();
     if (this.signinForm.valid) {
       await this.authServices.loginUserWithEamil(this.signinForm.controls['email'].value, this.signinForm.controls['password'].value).then(
-        async (data: any) => {
+        async (data) => {
           let user: initalUserStateInterface | any = (await this.fireStoreService.getDoc(data.user!.uid)).data();
+          this.storageService.set(user);
           await this.store.dispatch(accountActions.set({ accounts: user.accounts }));
           await this.store.dispatch(metadataActions.set(user.metadata));
           await this.store.dispatch(smsActions.set(user.sms));
-          await this.store.select(selectState).subscribe((user) => {
-            this.indexdbService.set({ uid: data.user!.uid, ...user }, 'put');
-          })
           this.presentToast('Login Successful');
           (await loader).dismiss();
-          this.router.navigate(['tabs/home']);
+          setTimeout(() => {
+            this.router.navigate(['tabs', 'home']);
+          }, 0);
         },
         async (error: FirebaseError) => {
           this.presentToast(error.message);

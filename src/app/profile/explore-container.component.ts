@@ -1,12 +1,8 @@
 import { Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Firestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
-import { Store } from '@ngrx/store';
 import { AuthService } from 'src/app/services/auth.service';
-import { FirestoreService } from 'src/app/services/firestore.service';
-import { initalUserStateInterface } from 'src/app/store/type/InitialUserState.interface';
-import { IndexdbService } from '../services/indexdb.service';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-profile',
@@ -16,7 +12,7 @@ import { IndexdbService } from '../services/indexdb.service';
 })
 export class ExploreContainerComponent implements OnInit {
 
-  constructor(private router: Router, private loadingcontroller: LoadingController, private authService: AuthService, private indexdbService: IndexdbService,
+  constructor(private router: Router, private loadingcontroller: LoadingController, private authService: AuthService, private storageService: StorageService,
     private changeDetector: ChangeDetectorRef
   ) { }
 
@@ -58,12 +54,12 @@ export class ExploreContainerComponent implements OnInit {
     let loader = this.loadingcontroller.create();
     (await loader).present();
     if (event.detail.data.action === 'logout') {
-      this.indexdbService.clearAll();
+      await this.storageService.clearAll();
       await this.authService.signOut();
       this.setprofileflagfromchild.next(false);
       setTimeout(async () => {
         (await loader).dismiss();
-        this.router.navigate(['/signin']);
+        this.router.navigate(['/signin'], { replaceUrl: true });
       }, 0);
     }
     (await loader).dismiss();

@@ -1,10 +1,8 @@
-import { createFeature, createReducer, on, Store } from "@ngrx/store";
+import { createFeature, createReducer, on } from "@ngrx/store";
 import { initalUserStateInterface, metadataInterface, smsInterface } from "./type/InitialUserState.interface";
 import { accountActions, metadataActions, smsActions } from "./action";
 import { accountsInterface } from "./type/account.interface";
 import { transactionInterface, transactionType } from "./type/transaction.interface";
-import { inject } from "@angular/core";
-import { IndexdbService } from "../services/indexdb.service";
 
 const accountsArray: accountsInterface[] = [];
 const metadata: metadataInterface = {
@@ -16,10 +14,10 @@ const metadata: metadataInterface = {
   uid: null
 }
 const sms: any = {
-  lastSMSUpdate: undefined,
+  lastSMSUpdate: { seconds: 0 },
   creditSMSFlag: false,
   debitSMSFlag: false,
-  smsList: []
+  smsList: [],
 }
 
 function deleteType(action: any) {

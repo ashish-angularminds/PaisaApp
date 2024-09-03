@@ -140,21 +140,18 @@
                       text-align: end;
                     "
                   >
-                    <!-- <h2>
-                      {{getTransactionCategory(transactionLog?.category)}}
-                    </h2>
-                    <small
-                      >{{transactionLog?.account | uppercase}} / {{
-                      getTransactionMode(transactionLog?.mode)}}</small
-                    > -->
                     <small
                       >{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small
                     >
                     <br />
+                    @if (transactionLog?.type === 0) {
+                    <small>{{transactionLog?.category|category}}</small>
+                    } @else {
                     <small
                       >{{transactionLog?.category|category}} / {{
                       transactionLog?.merchant}}</small
                     >
+                    }
                   </ion-label>
 
                   <ion-label
@@ -171,7 +168,6 @@
                 [trigger]="transactionLog?.id"
                 triggerAction="click"
                 alignment="end"
-                *ngIf="transactionLog.merchant"
               >
                 <ng-template>
                   <ion-content class="ion-padding"
