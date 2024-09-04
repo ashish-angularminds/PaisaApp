@@ -1,32 +1,35 @@
-import { Animation, AnimationBuilder, AnimationController, createAnimation } from '@ionic/angular';
+import { Animation, AnimationBuilder, AnimationController, createAnimation, getIonPageElement, TransitionOptions } from '@ionic/angular';
 
-export const enterAnimation: AnimationBuilder = (baseEl: HTMLElement, opts?: any): Animation => {
-  const DURATION = 5000;
-  let ctr = new AnimationController();
-  console.log('enter first')
+export function pageTransition(_: HTMLElement, opts: TransitionOptions) {
+  const DURATION = 1500;
+
+  console.log('check----first');
+  // root animation with common setup for the whole transition
+  const rootTransition = createAnimation()
+    .duration(opts.duration || DURATION)
+    .easing('cubic-bezier(0.3,0,0.66,1)');
+
+  // ensure that the entering page is visible from the start of the transition
+  const enteringPage = createAnimation()
+    .addElement(getIonPageElement(opts.enteringEl))
+    .beforeRemoveClass('ion-page-invisible');
+
+  // create animation for the leaving page
+  const leavingPage = createAnimation().addElement(
+    getIonPageElement(opts.leavingEl!)
+  );
+
+  // actual customized animation
   if (opts.direction === 'forward') {
-    // Fade in the next page
-    return ctr.create()
-      .addElement(opts.enteringEl)
-      .duration(DURATION)
-      .easing('ease-in')
-      .fromTo('opacity', 0, 1);
+    enteringPage.fromTo('transform', 'translateX(100%)', 'translateX(0)');
+    leavingPage.fromTo('opacity', '1', '0.25');
   } else {
-    // Fade in the previous page
-    const rootAnimation = createAnimation()
-      .addElement(opts.enteringEl)
-      .duration(DURATION)
-      .easing('ease-out')
-      .fromTo('opacity', 0, 1);
-
-    // Fade out the current top page
-    const leavingAnim = createAnimation()
-      .addElement(opts.leavingEl)
-      .duration(DURATION)
-      .easing('ease-out')
-      .fromTo('opacity', 1, 0);
-
-    // Chain both animations
-    return createAnimation().addAnimation([rootAnimation, leavingAnim]);
+    leavingPage.fromTo('transform', 'translateX(0)', 'translateX(100%)');
+    enteringPage.fromTo('opacity', '0.25', '1');
   }
-};
+
+  // include animations for both pages into the root animation
+  rootTransition.addAnimation(enteringPage);
+  rootTransition.addAnimation(leavingPage);
+  return rootTransition;
+}

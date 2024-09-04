@@ -1,10 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { FirestoreService } from '../services/firestore.service';
 import { transactionInterface, transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
 import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
-import { ToastController } from '@ionic/angular';
+import { AnimationController, ToastController } from '@ionic/angular';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionService } from '../services/transaction.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -38,7 +38,8 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
   smsId: any;
 
   constructor(private formBuilder: FormBuilder, private store: Store<initalUserStateInterface>, private authService: AuthService,
-    private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService, private storageService: StorageService) { }
+    private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService,
+    private storageService: StorageService, private animationCtrl: AnimationController, private ref: ElementRef) { }
 
   async ngOnInit() {
     this.transaction = this.formBuilder.group({

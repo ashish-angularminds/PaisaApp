@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, DoCheck, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, DestroyRef, DoCheck, ElementRef, HostBinding, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { FirestoreService } from '../services/firestore.service';
 import { transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
@@ -7,10 +7,10 @@ import { initalUserStateInterface } from '../store/type/InitialUserState.interfa
 import { TransactionService } from '../services/transaction.service';
 import { selectState } from '../store/selectors';
 import { accountActions, metadataActions, smsActions } from '../store/action';
-import { LoadingController, NavController } from '@ionic/angular';
+import { AnimationController, LoadingController, NavController } from '@ionic/angular';
 import { StorageService } from '../services/storage.service';
 import { AuthService } from '../services/auth.service';
-import { enterAnimation } from '../nav-animation';
+import { pageTransition } from '../nav-animation';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -41,7 +41,8 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
 
   constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService,
     private router: Router, private transactionService: TransactionService, private storageService: StorageService,
-    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController, private authService: AuthService, private navCtrl: NavController) {
+    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController, private authService: AuthService,
+    private navCtrl: NavController, private animationCtrl: AnimationController, private ref: ElementRef) {
     this.account = {
       "month": 0,
       "year": 0,
@@ -156,7 +157,6 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
       tmpTransaction.merchant = "NAN";
     }
     this.transactionService.transaction.next(tmpTransaction);
-    this.navCtrl.setDirection('forward', true, 'forward', enterAnimation);
     this.router.navigateByUrl('tabs/addtransaction');
   }
 
@@ -166,11 +166,6 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
 
   ngOnDestroy(): void {
     console.log('destroy');
-  }
-
-  test() {
-    this.navCtrl.setDirection('forward', true, 'forward', enterAnimation);
-    this.router.navigateByUrl('tabs/addtransaction');
   }
 
 }
