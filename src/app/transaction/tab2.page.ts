@@ -12,6 +12,7 @@ import { accountsInterface } from '../store/type/account.interface';
 import { selectState } from '../store/selectors';
 import { accountActions, smsActions } from '../store/action';
 import { StorageService } from '../services/storage.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-tab2',
@@ -36,10 +37,10 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
   cdate: any;
   smsId: any;
 
-  constructor(private formBuilder: FormBuilder, private store: Store<initalUserStateInterface>,
+  constructor(private formBuilder: FormBuilder, private store: Store<initalUserStateInterface>, private authService: AuthService,
     private firestoreService: FirestoreService, private router: Router, private transactionService: TransactionService, private storageService: StorageService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.transaction = this.formBuilder.group({
       amount: new FormControl(null, { validators: [Validators.required] }),
       account: new FormControl(null, { validators: [Validators.required] }),
@@ -73,9 +74,14 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.store.select(selectState).subscribe(async (data) => {
-      this.user = data;
-      await this.storageService.set(data);
-      await this.firestoreService.updateDoc(data.metadata.uid!, data);
+      this.user = { ...data };
+      await this.storageService.set(this.user);
+      await this.firestoreService.updateDoc(data.metadata.uid!, data).catch(async (error) => {
+        console.log(error);
+        await this.storageService.clearAll();
+        await this.authService.signOut();
+        this.router.navigate(['/signin'], { replaceUrl: true });
+      });;
     });
   }
 
@@ -95,12 +101,9 @@ export class Tab2Page implements OnInit, OnDestroy, AfterViewInit {
       mdate = new Date();
     }
     let flag = true;
-    let fdate = mdate.toJSON().split('').filter((item) => {
-      if (item === 'T') {
-        flag = false;
-      }
-      return flag;
-    }).join('');
+    let fmonth = (mdate.getMonth() + 1) < 10 ? '0' + (mdate.getMonth() + 1) : (mdate.getMonth() + 1);
+    let fday = mdate.getDate() < 10 ? '0' + mdate.getDate() : mdate.getDate();
+    let fdate = mdate.getFullYear() + '-' + fmonth + '-' + fday;
     return (fdate + 'T' + (mdate.toTimeString().split(' ')[0]));
   }
 

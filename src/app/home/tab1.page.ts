@@ -7,11 +7,10 @@ import { initalUserStateInterface } from '../store/type/InitialUserState.interfa
 import { TransactionService } from '../services/transaction.service';
 import { selectState } from '../store/selectors';
 import { accountActions, metadataActions, smsActions } from '../store/action';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, NavController } from '@ionic/angular';
 import { StorageService } from '../services/storage.service';
-import { accountsInterface } from '../store/type/account.interface';
 import { AuthService } from '../services/auth.service';
-import { skip } from 'rxjs';
+import { enterAnimation } from '../nav-animation';
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -42,7 +41,7 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
 
   constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService,
     private router: Router, private transactionService: TransactionService, private storageService: StorageService,
-    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController, private authService: AuthService) {
+    private changeDetector: ChangeDetectorRef, private loaderCtr: LoadingController, private authService: AuthService, private navCtrl: NavController) {
     this.account = {
       "month": 0,
       "year": 0,
@@ -54,26 +53,6 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
   }
 
   async ngOnInit() {
-    let data = await this.storageService.get();
-    if (data) {
-      await this.store.dispatch(metadataActions.set(data.metadata));
-      await this.store.dispatch(smsActions.set(data.sms));
-      if ((Object.values(data.accounts)).filter((data: any) => data.month === (this.newDate.getMonth() + 1)).length === 0) {
-        let tmp: accountsInterface[] = Object.values(data.accounts);
-        tmp.push({
-          month: this.newDate.getMonth() + 1,
-          year: this.newDate.getFullYear(),
-          savings: 0,
-          totalCredit: 0,
-          totalSpent: 0,
-          transactions: []
-        })
-        await this.store.dispatch(accountActions.set({ accounts: tmp }));
-      } else {
-        await this.store.dispatch(accountActions.set({ accounts: data.accounts }));
-      }
-    }
-
     this.store.select(selectState).subscribe(async (data: initalUserStateInterface) => {
       if (data) {
         this.user = { ...data };
@@ -177,7 +156,8 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
       tmpTransaction.merchant = "NAN";
     }
     this.transactionService.transaction.next(tmpTransaction);
-    this.router.navigate(['tabs', 'addtransaction']);
+    this.navCtrl.setDirection('forward', true, 'forward', enterAnimation);
+    this.router.navigateByUrl('tabs/addtransaction');
   }
 
   ngDoCheck(): void {
@@ -186,6 +166,11 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
 
   ngOnDestroy(): void {
     console.log('destroy');
+  }
+
+  test() {
+    this.navCtrl.setDirection('forward', true, 'forward', enterAnimation);
+    this.router.navigateByUrl('tabs/addtransaction');
   }
 
 }

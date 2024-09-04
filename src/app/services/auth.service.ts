@@ -43,7 +43,7 @@ export class AuthService {
   async setPersistence() {
     try {
       await this.ngFireAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      console.log('Persistence set to LOCAL');
+      console.log('LOCAL');
     } catch (error) {
       console.error('Error setting persistence:', error);
     }

@@ -16,10 +16,11 @@ import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getDatabase, provideDatabase } from '@angular/fire/database';
 import { accountReducer, metadataReducer, smsReducer } from './store/reducers';
 import { IonicStorageModule } from '@ionic/storage-angular';
+import { enterAnimation } from './nav-animation';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot({ animated: true }), AppRoutingModule, ReactiveFormsModule,
+  imports: [BrowserModule, IonicModule.forRoot({ navAnimation: enterAnimation, animated: true }), AppRoutingModule, ReactiveFormsModule,
     StoreModule.forRoot({ metadata: metadataReducer, sms: smsReducer, accounts: accountReducer }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
