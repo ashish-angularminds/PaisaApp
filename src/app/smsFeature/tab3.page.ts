@@ -80,6 +80,8 @@ export class Tab3Page implements OnInit {
       await SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
         if (value === "granted") {
           this.permissionFlag = true;
+        } else {
+          this.permissionFlag = false;
         }
       });
     } else {
@@ -102,13 +104,15 @@ export class Tab3Page implements OnInit {
   organizeData(smsList: any): transactionInterface[] {
     let tmpQueue = [...(this.user.sms.smsList || [])];
     for (let element of smsList) {
+      let amountFlag = false;
+      let finalamountFlag = true;
       let merchantFlag = false;
       let newtransaction: any = {
         id: element.id,
         merchant: '',
         createdAt: { seconds: element.date },
         updatedAt: { seconds: element.date },
-        amount: 0,
+        amount: '',
         type: this.creditRegex.test(element?.body) ? transactionType.Credit : transactionType.Debit,
         mode: /upi/i.test(element?.body) ? transactionMode.UPI : /withdrawn|atm/i.test(element?.body) ? transactionMode.Debit_Card : /bank card|card/i.test(element?.body) ? transactionMode.Credit_Card : /bank/i.test(element?.body) ? transactionMode.UPI : transactionMode.UPI,
         account: element?.address,
@@ -119,7 +123,18 @@ export class Tab3Page implements OnInit {
         let splitString = element.body.split(' ');
         splitString.forEach((str: any, index: number) => {
           if (this.amountRegex.test(str)) {
-            newtransaction.amount = newtransaction.amount ? newtransaction.amount : ((str.match(/\d/g)?.length ? str.split('.')[1].match(/\d/g)?.join('') : splitString.at(index + 1) ? splitString.at(index + 1) : splitString.at(index + 2)));
+            amountFlag = true;
+          }
+          if (amountFlag && finalamountFlag) {
+            let tmparr = str.split('.');
+            if (tmparr) {
+              newtransaction.amount = newtransaction.amount + ((str.match(/\d/g) ? str.split('.').map((data: any, i: number) => {
+                let tmpamt = data.match(/\d/g) ? data.match(/\d/g).join('') : '';
+                return i !== 0 && tmparr[i - 1].match(/\d/g) ? '.' + tmpamt : tmpamt;
+              }).join('') : ''));
+            }
+            amountFlag = (splitString[index + 1] + splitString[index + 2]).match(/\d/g) ? true : false;
+            finalamountFlag = amountFlag;
           }
           if (this.merchantRegex.test(element?.body) && /on/i.test(element.body) && newtransaction.type === transactionType.Debit) {
             if (merchantFlag) {
@@ -135,7 +150,7 @@ export class Tab3Page implements OnInit {
           }
         });
       }
-      if (newtransaction.amount > 0) {
+      if (newtransaction.amount) {
         tmpQueue.push(newtransaction);
       }
     }

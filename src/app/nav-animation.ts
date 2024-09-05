@@ -1,7 +1,7 @@
 import { Animation, AnimationBuilder, AnimationController, createAnimation, getIonPageElement, TransitionOptions } from '@ionic/angular';
 
 export function pageTransition(_: HTMLElement, opts: TransitionOptions) {
-  const DURATION = 1500;
+  const DURATION = 500;
 
   console.log('check----first');
   // root animation with common setup for the whole transition
@@ -21,10 +21,10 @@ export function pageTransition(_: HTMLElement, opts: TransitionOptions) {
 
   // actual customized animation
   if (opts.direction === 'forward') {
-    enteringPage.fromTo('transform', 'translateX(100%)', 'translateX(0)');
+    // enteringPage.fromTo('transform', 'translateX(100%)', 'translateX(0)');
     leavingPage.fromTo('opacity', '1', '0.25');
   } else {
-    leavingPage.fromTo('transform', 'translateX(0)', 'translateX(100%)');
+    // leavingPage.fromTo('transform', 'translateX(0)', 'translateX(100%)');
     enteringPage.fromTo('opacity', '0.25', '1');
   }
 
