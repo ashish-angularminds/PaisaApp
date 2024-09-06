@@ -47,7 +47,7 @@
     <ion-row>
       <ion-col>
         <ion-list [inset]="false" lines="full" class="transaction-list">
-          <ion-item-sliding *ngFor="let transactionLog of smsList">
+          <ion-item-sliding *ngFor="let transactionLog of smsList|sortList">
             <ion-item [button]="true" [id]="transactionLog.id">
               <ion-icon
                 class="ion-no-margin ion-margin-end"
@@ -57,7 +57,7 @@
                 [color]="transactionLog?.type===0?'success':'danger'"
               ></ion-icon>
               <ion-label [color]="transactionLog?.type===0?'success':'danger'">
-                <h2>Rs.{{transactionLog?.amount}}</h2>
+                <h2>{{transactionLog?.amount|currency:'INR'}}</h2>
                 <small>{{transactionLog?.createdAt|fullDate}}</small>
               </ion-label>
 
@@ -137,19 +137,24 @@
     </ion-row>
   </ion-grid>
   } @else {
-  <ion-grid style="padding: 0 10px !important">
-    <ion-row>
-      <ion-col class="ion-align-items-center">
-        <h1>We don't have the access to the your SMS</h1>
-        <button
-          color="success"
-          fill="outline"
+  <ion-grid style="padding: 0 10px !important; height: 100%">
+    <ion-row style="height: 100%">
+      <ion-col
+        class="ion-align-self-center ion-justify-content-center ion-padding ion-text-center"
+        style="display: grid; width: 100%"
+      >
+        <ion-button
+          color="dark"
+          fill="solid"
           shape="round"
           size="large"
           (click)="checkPermission()"
         >
           Request Permission
-        </button>
+        </ion-button>
+        <i class="ion-margin-top"
+          >We don't have the permission to access your SMS</i
+        >
       </ion-col>
     </ion-row>
   </ion-grid>

@@ -1,5 +1,5 @@
 import { IonicModule } from '@ionic/angular';
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Tab1Page } from './tab1.page';
@@ -21,6 +21,7 @@ import { ModePipe } from '../pipes/mode.pipe';
     CategoryPipe,
     ModePipe
   ],
-  declarations: [Tab1Page, ExploreContainerComponent]
+  declarations: [Tab1Page, ExploreContainerComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class Tab1PageModule { }

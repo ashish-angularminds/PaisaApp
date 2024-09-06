@@ -11,6 +11,9 @@ import { AnimationController, LoadingController, NavController } from '@ionic/an
 import { StorageService } from '../services/storage.service';
 import { AuthService } from '../services/auth.service';
 import { pageTransition } from '../nav-animation';
+import { register } from 'swiper/element/bundle';
+
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -51,6 +54,7 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
       "totalSpent": 0,
       "transactions": []
     }
+    register();
   }
 
   async ngOnInit() {

@@ -1,6 +1,17 @@
 <ion-content [fullscreen]="true" class="ion-padding ion-text-center">
-  <h1>Welcome</h1>
-  <ion-button shape="round" color="light" routerLink="/signin"
-    >Start</ion-button
-  >
+  <ion-grid style="height: 100%; display: grid" class="ion-align-items-end">
+    <ion-row>
+      <ion-col>
+        <ion-img src="../../assets/Asset.png"></ion-img>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <h1>Let's Manage your finances together</h1>
+        <ion-button class="ion-padding" color="dark" routerLink="/signin"
+          >Get Started</ion-button
+        >
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

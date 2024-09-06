@@ -1,0 +1,35 @@
+.bg {
+  background-image: url("../../assets/Asset.png");
+  background-position: center;
+  background-size: 250px;
+  background-repeat: no-repeat;
+  height: 71%;
+  margin-top: -56px;
+}
+
+.glass {
+  padding: 34px;
+  backdrop-filter: blur(10px) saturate(200%);
+  -webkit-backdrop-filter: blur(15px) saturate(200%);
+  background-color: rgba(31, 23, 29, 0.5);
+  border-radius: 35px 35px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+ion-content {
+  --background-color: #000;
+  --background: #000;
+  font-weight: 400;
+  font-family: "Raleway", sans-serif;
+}
+
+h1 {
+  margin: 2px 0 30px 0;
+  font-size: 35px;
+  font-weight: 800;
+}
+
+ion-input {
+  --border-color: #fff !important;
+  margin: 35px 0;
+}

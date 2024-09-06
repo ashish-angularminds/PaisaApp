@@ -3,12 +3,34 @@
   border-bottom: 1px solid rgba(128, 128, 128, 0.5);
 }
 
-.sm-card {
-  border-radius: 16px;
-  box-shadow: 0 2px 20px rgba(255, 255, 255, 0.322);
-  background-image: url(../../assets/bg.webp);
-  background-position: center;
-  background-size: cover;
+.outer-box {
+  width: auto;
+  height: auto;
+}
+
+.box-shadow {
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.inner-box {
+  height: 50%;
+  width: auto;
+  padding: 20px;
+  color: #000;
+  background-image: linear-gradient(#fff, #fff);
+  // background-image: url(../../assets/bg.webp);
+  // background-position: center;
+  // background-size: cover;
+  // border-radius: 20px 20px 0 0;
+  margin-bottom: -1px;
+}
+
+.inner-box:last-child {
+  color: #fff;
+  background-image: linear-gradient(109.6deg, #662d8c, #eb5194);
+  // border-radius: 0 0 20px 20px;
 }
 
 .transaction-list {
@@ -18,13 +40,12 @@
 }
 
 .title-text {
-  color: #000;
   font-family: "Long Cang", cursive;
 }
 
 .amount-text {
-  color: #000;
-  font-family: "Staatliches", sans-serif;
+  margin-top: 5px;
+  font-family: "Railway", sans-serif;
 }
 
 ion-thumbnail {
@@ -37,15 +58,19 @@ ion-thumbnail ~ b {
   font-weight: 900;
 }
 
-ion-datetime {
-  margin-bottom: 16px;
-  border-radius: 16px;
-  box-shadow: rgba(var(--ion-color-rose-rgb), 0.3) 0px 10px 15px -3px;
+.userlogo {
+  height: 60px;
+  width: 60px;
+  position: relative;
 }
-
-ion-input {
-  --border-color: #fff !important;
-  --border-style: solid !important;
-  --border-width: 2px !important;
-  --highlight-color: var(--ion-color-primary) !important;
+.userlogo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  padding: 2px;
+  background: linear-gradient(95deg, #fff, #fb91d2);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }

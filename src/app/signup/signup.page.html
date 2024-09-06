@@ -1,78 +1,59 @@
-<ion-content [fullscreen]="true">
-  <ion-grid>
-    <ion-row>
-      <ion-col class="ion-padding">
-        <ion-avatar
-          style="width: auto; height: auto; background-color: #e991f5"
-        >
-          <ion-img
-            style="object-fit: fill"
-            src="https://cdn-icons-png.flaticon.com/512/16382/16382065.png "
-          ></ion-img>
-        </ion-avatar>
+<ion-content [fullscreen]="true" class="" style="background: #000">
+  <ion-grid class="ion-no-padding" style="height: 100%">
+    <ion-row style="height: 35%">
+      <ion-col>
+        <ion-img src="../../assets/sign.png"></ion-img>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col
-        class="ion-align-self-center ion-padding-horizontal ion-margin-top"
-      >
-        <form [formGroup]="signupForm">
+    <ion-row class="bg">
+      <ion-col class="ion-align-self-center glass" style="height: 100%">
+        <h1 class="ion-text-center">
+          Let's Start Your Journey!
+          <p
+            class="ion-no-padding"
+            style="font-size: 15px; font-weight: 400; font-style: italic"
+          >
+            To a better finances.
+          </p>
+        </h1>
+        <form [formGroup]="signupForm" class="ion-text-center">
           <ion-input
-            label="Name"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter Name"
             [clearInput]="true"
+            fill="outline"
             shape="round"
+            type="password"
+            placeholder="Name"
             formControlName="fullname"
           ></ion-input>
-          <br />
           <ion-input
-            label="Email"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter Email"
             [clearInput]="true"
+            placeholder="Email"
+            fill="outline"
             shape="round"
+            type="password"
             formControlName="email"
           ></ion-input>
-          <br />
           <ion-input
-            label="Password"
-            label-placement="floating"
+            [clearInput]="true"
+            placeholder="Password"
             fill="outline"
-            placeholder="Enter Password"
-            type="password"
             shape="round"
+            type="password"
             formControlName="password"
           >
-            <!-- <ion-input-password-toggle
-              slot="end"
-              hide-icon="true"
-            ></ion-input-password-toggle> -->
           </ion-input>
+          <ion-button
+            class="ion-margin-vertical"
+            color="dark"
+            fill="solid"
+            expand="full"
+            shape="round"
+            size="large"
+            (click)="signup()"
+            >Sign Up</ion-button
+          >
+          <p routerLink="/signin" style="font-weight: 800">Existing user ?</p>
         </form>
-      </ion-col>
-    </ion-row>
-
-    <ion-row>
-      <ion-col offset="4">
-        <ion-button
-          color="success"
-          fill="outline"
-          shape="round"
-          size="large"
-          (click)="signup()"
-          >Sign Up</ion-button
-        >
-      </ion-col>
-    </ion-row>
-
-    <ion-row>
-      <ion-col class="ion-text-center">
-        <!-- <a routerLink="/signup">Forgot password ?</a>
-          <br /> -->
-        <a routerLink="/signin">Existing user ?</a>
       </ion-col>
     </ion-row>
   </ion-grid>

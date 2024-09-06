@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, OnInit } from '@angular/core';
 import { LoadingController, ToastController, ToggleCustomEvent } from '@ionic/angular';
 import { Store } from '@ngrx/store';
 import { SMSInboxReader, SMSFilter, SMSObject } from 'capacitor-sms-inbox/dist/esm'
@@ -18,7 +18,7 @@ import { StorageService } from '../services/storage.service';
   styleUrls: ['tab3.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Tab3Page implements OnInit {
+export class Tab3Page implements OnInit, DoCheck {
 
   constructor(private store: Store<initalUserStateInterface>, private firestoreService: FirestoreService, private transactionService: TransactionService,
     private router: Router, private toastController: ToastController, private storageService: StorageService, private changeDetector: ChangeDetectorRef,
@@ -62,7 +62,7 @@ export class Tab3Page implements OnInit {
   creditRegex = /credited/i;
   amountRegex = /inr|by|rs/i;
   merchantRegex = /\bto\b|\bat\b/i;
-  permissionFlag = true;
+  permissionFlag = false;
 
   async ngOnInit() {
     this.checkPermission();
@@ -75,11 +75,18 @@ export class Tab3Page implements OnInit {
     this.loadData();
   }
 
+  ngDoCheck(): void {
+    if (!this.permissionFlag) {
+      this.loadData();
+    }
+  }
+
   async checkPermission() {
     if ((await SMSInboxReader.checkPermissions()).sms !== "granted") {
-      await SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
+      SMSInboxReader.requestPermissions().then((value: PermissionStatus | any) => {
         if (value === "granted") {
           this.permissionFlag = true;
+          this.loadData();
         } else {
           this.permissionFlag = false;
         }
