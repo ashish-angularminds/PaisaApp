@@ -72,7 +72,7 @@ export class Tab3Page implements OnInit, DoCheck {
       await this.firestoreService.updateDoc(data.metadata.uid!, data);
       await this.storageService.set(data);
     });
-    this.loadData();
+    // this.loadData();
   }
 
   ngDoCheck(): void {
@@ -108,8 +108,22 @@ export class Tab3Page implements OnInit, DoCheck {
     });
   }
 
+  filterCategory(body:string){
+    if(/delicious/i.test(body)){
+      return transactionCategory.Food;
+    } else if(/fueled/i.test(body)){
+      return transactionCategory.Travel;
+    }else if(/hand-picked|market|fruits/i.test(body)){
+      return transactionCategory.Shopping;
+    }else if(/medica|chemist/i.test(body)){
+      return transactionCategory.Medical;
+    }else {
+      return transactionCategory.Other;
+    }
+  }
+
   organizeData(smsList: any): transactionInterface[] {
-    let tmpQueue = [...(this.user.sms.smsList || [])];
+    let tmpQueue = [...([...this.user.sms.smsList!] || [])];
     for (let element of smsList) {
       let amountFlag = false;
       let finalamountFlag = true;
@@ -123,7 +137,7 @@ export class Tab3Page implements OnInit, DoCheck {
         type: this.creditRegex.test(element?.body) ? transactionType.Credit : transactionType.Debit,
         mode: /upi/i.test(element?.body) ? transactionMode.UPI : /withdrawn|atm/i.test(element?.body) ? transactionMode.Debit_Card : /bank card|card/i.test(element?.body) ? transactionMode.Credit_Card : /bank/i.test(element?.body) ? transactionMode.UPI : transactionMode.UPI,
         account: element?.address,
-        category: /delicious/i.test(element?.body) ? transactionCategory.Food : /fueled/i.test(element?.body) ? transactionCategory.Travel : /hand-picked|market|fruits/i.test(element?.body) ? transactionCategory.Shopping : /medica|chemist|/i.test(element?.body) ? transactionCategory.Medical : transactionCategory.Other,
+        category: this.filterCategory(element?.body),
         body: element?.body
       };
       if (this.spendRegex.test(element.body)) {
