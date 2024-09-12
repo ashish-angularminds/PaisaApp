@@ -8,5 +8,10 @@ export const environment = {
     messagingSenderId: "574676221207",
     appId: "1:574676221207:web:d6eebcefa505678bcccb52",
     measurementId: "G-M6EV1C2WKH"
+  },
+  cloudinary: {
+    cloud_name: "dos9gxfc0",
+    api_key: "617332778718684",
+    api_secret: "Uw02X1_Ezl2jeBBCmtGvu6QOKwA",
   }
 };

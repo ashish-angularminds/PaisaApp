@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, DestroyRef, DoCheck, ElementRef, HostBinding, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, ElementRef, HostBinding, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { FirestoreService } from '../services/firestore.service';
 import { transactionCategory, transactionMode, transactionType } from '../store/type/transaction.interface';
@@ -6,14 +6,11 @@ import { Router } from '@angular/router';
 import { initalUserStateInterface } from '../store/type/InitialUserState.interface';
 import { TransactionService } from '../services/transaction.service';
 import { selectState } from '../store/selectors';
-import { accountActions, metadataActions, smsActions } from '../store/action';
+import { accountActions } from '../store/action';
 import { AnimationController, LoadingController, NavController } from '@ionic/angular';
 import { StorageService } from '../services/storage.service';
 import { AuthService } from '../services/auth.service';
-import { pageTransition } from '../nav-animation';
 import { register } from 'swiper/element/bundle';
-
-
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -171,5 +168,4 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
   ngOnDestroy(): void {
     console.log('destroy');
   }
-
 }

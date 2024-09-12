@@ -9,6 +9,9 @@ import { SortListPipe } from '../pipes/sort-list.pipe';
 import { CategoryPipe } from '../pipes/category.pipe';
 import { FullDatePipe } from '../pipes/full-date.pipe';
 import { ModePipe } from '../pipes/mode.pipe';
+import { environment } from '../../environments/environment'
+import { HttpClientModule } from '@angular/common/http';
+import { MediaService } from '../services/media.service';
 
 @NgModule({
   imports: [
@@ -19,7 +22,11 @@ import { ModePipe } from '../pipes/mode.pipe';
     SortListPipe,
     FullDatePipe,
     CategoryPipe,
-    ModePipe
+    ModePipe,
+    HttpClientModule
+  ],
+  providers: [
+    MediaService
   ],
   declarations: [Tab1Page, ExploreContainerComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

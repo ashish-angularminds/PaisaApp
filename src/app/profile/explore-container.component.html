@@ -1,11 +1,11 @@
 <div
-  style="background: url('/../../assets/bg.webp'); background-size: cover"
+  style="background: url('/../../assets/bg.webp'); background-size: cover; display: grid; place-content: center;"
   class="ion-padding"
 >
-  <ion-img
-    class="ion-padding ion-margin"
-    src="../../../assets/person.png"
-  ></ion-img>
+<ion-thumbnail (click)="updateInput()" class="ion-padding ion-margin">
+  <img [src]="user?.photoURL || '../../assets/boy.png'" />
+</ion-thumbnail>
+<input #imgInput type="file" (change)="onFileChange($event)"/>
 </div>
 <div class="ion-padding">
   <ion-list lines="full" [inset]="true">
@@ -34,7 +34,7 @@
         aria-hidden="true"
       ></ion-icon>
       <ion-input [disabled]="emailFlag" [(ngModel)]="user.email"> </ion-input>
-      <ion-button fill="clear" slot="end" (click)="emailFlag = !emailFlag">
+      <ion-button [disabled]="true" fill="clear" slot="end" (click)="emailFlag = !emailFlag">
         <ion-icon
           slot="icon-only"
           name="color-wand-outline"
@@ -60,7 +60,7 @@
       } @else {
       <ion-input [disabled]="true" value="NaN"> </ion-input>
       }
-      <ion-button fill="clear" slot="end" (click)="phoneFlag = !phoneFlag">
+      <ion-button [disabled]="true" fill="clear" slot="end" (click)="phoneFlag = !phoneFlag">
         <ion-icon
           slot="icon-only"
           name="color-wand-outline"
@@ -79,7 +79,8 @@
       color="dark"
       shape="round"
       size="default"
-      >Submit</ion-button
+      (click)="updateProfile()"
+      >Update Profile</ion-button
     >
   </div>
 

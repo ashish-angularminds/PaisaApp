@@ -12,6 +12,11 @@ export const environment = {
     messagingSenderId: "574676221207",
     appId: "1:574676221207:web:d6eebcefa505678bcccb52",
     measurementId: "G-M6EV1C2WKH"
+  },
+  cloudinary: {
+    cloudName: "dos9gxfc0",
+    apiKey: "617332778718684",
+    apiSecret: "Uw02X1_Ezl2jeBBCmtGvu6QOKwA",
   }
 };
 

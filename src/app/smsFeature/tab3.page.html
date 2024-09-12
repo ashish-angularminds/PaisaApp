@@ -1,8 +1,5 @@
-<ion-header
-  mode="ios"
-  [translucent]="true"
-  class="ion-no-border ion-padding-horizontal ion-margin-vertical ion-padding-top"
->
+<ion-header mode="ios" [translucent]="true" class="ion-no-border ion-padding-horizontal"
+  style="padding-top: 32px;padding-bottom: 16px;">
   <ion-toolbar color="transparent">
     <ion-buttons slot="start">
       <ion-button color="dark" size="large" strong="true">
@@ -12,36 +9,20 @@
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-toggle
-        value="credit"
-        (ionChange)="toggleStateChange($event)"
-        [enableOnOffLabels]="true"
-        color="success"
-        class="credit"
-        [checked]="user.sms.creditSMSFlag"
-      ></ion-toggle>
-      <ion-toggle
-        value="debit"
-        (ionChange)="toggleStateChange($event)"
-        class="ion-margin-horizontal debit"
-        [enableOnOffLabels]="true"
-        color="danger"
-        [checked]="user.sms.debitSMSFlag"
-      ></ion-toggle>
+      <ion-toggle value="credit" (ionChange)="toggleStateChange($event)" [enableOnOffLabels]="true" color="success"
+        class="credit" [checked]="user.sms.creditSMSFlag"></ion-toggle>
+      <ion-toggle value="debit" (ionChange)="toggleStateChange($event)" class="ion-margin-horizontal debit"
+        [enableOnOffLabels]="true" color="danger" [checked]="user.sms.debitSMSFlag"></ion-toggle>
       <ion-button id="reset-action-sheet">
         <ion-icon size="large" name="reload-circle-outline"></ion-icon>
       </ion-button>
-      <ion-action-sheet
-        trigger="reset-action-sheet"
-        header="Actions"
-        [buttons]="resetActionSheetButtons"
-        (didDismiss)="resetList($event)"
-      ></ion-action-sheet>
+      <ion-action-sheet trigger="reset-action-sheet" header="Actions" [buttons]="resetActionSheetButtons"
+        (didDismiss)="resetList($event)"></ion-action-sheet>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding-bottom">
+<ion-content class="ion-padding-bottom" fullscreen="true">
   @if (permissionFlag) {
   <ion-grid style="padding: 0 10px !important">
     <ion-row>
@@ -49,85 +30,52 @@
         <ion-list [inset]="false" lines="full" class="transaction-list">
           <ion-item-sliding *ngFor="let transactionLog of smsList|sortList">
             <ion-item [button]="true" [id]="transactionLog.id">
-              <ion-icon
-                class="ion-no-margin ion-margin-end"
-                slot="start"
-                size="large"
+              <ion-icon class="ion-no-margin ion-margin-end" slot="start" size="large"
                 [name]="transactionLog?.type===0?'add-circle':'remove-circle'"
-                [color]="transactionLog?.type===0?'success':'danger'"
-              ></ion-icon>
+                [color]="transactionLog?.type===0?'success':'danger'"></ion-icon>
               <ion-label [color]="transactionLog?.type===0?'success':'danger'">
                 <h2>{{transactionLog?.amount|currency:'INR'}}</h2>
                 <small>{{transactionLog?.createdAt|fullDate}}</small>
               </ion-label>
 
               <ion-label slot="end" style="display: contents">
-                <ion-label
-                  slot="start"
-                  style="
+                <ion-label slot="start" style="
                     overflow: hidden;
                     text-overflow: ellipsis !important;
                     white-space: nowrap;
                     max-width: 35%;
                     text-align: end;
-                  "
-                >
-                  <small
-                    >{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small
-                  >
+                  ">
+                  <small>{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small>
                   <br />
                   @if (transactionLog?.type === 0) {
                   <small>{{transactionLog?.category|category}}</small>
                   } @else {
-                  <small
-                    >{{transactionLog?.category|category}} / {{
-                    transactionLog?.merchant}}</small
-                  >
+                  <small>{{transactionLog?.category|category}} / {{
+                    transactionLog?.merchant}}</small>
                   }
                 </ion-label>
 
-                <ion-label
-                  style="max-width: 25%"
-                  slot="end"
-                  class="ion-text-right"
-                  [color]="transactionLog?.type===1?'success':'danger'"
-                >
+                <ion-label style="max-width: 25%" slot="end" class="ion-text-right"
+                  [color]="transactionLog?.type===1?'success':'danger'">
                 </ion-label>
               </ion-label>
             </ion-item>
 
-            <ion-popover
-              [trigger]="transactionLog?.id"
-              triggerAction="click"
-              alignment="end"
-            >
+            <ion-popover [trigger]="transactionLog?.id" triggerAction="click" alignment="end">
               <ng-template>
-                <ion-content class="ion-padding"
-                  >{{transactionLog?.body}}</ion-content
-                >
+                <ion-content class="ion-padding">{{transactionLog?.body}}</ion-content>
               </ng-template>
             </ion-popover>
 
             <ion-item-options slot="end">
-              <ion-item-option
-                color="success"
-                expandable="true"
-                (click)="addTransaction(transactionLog)"
-              >
+              <ion-item-option color="success" expandable="true" (click)="addTransaction(transactionLog)">
                 <ion-icon slot="icon-only" name="checkmark"></ion-icon>
               </ion-item-option>
-              <ion-item-option
-                color="primary"
-                expandable="true"
-                (click)="editTransaction(transactionLog)"
-              >
+              <ion-item-option color="primary" expandable="true" (click)="editTransaction(transactionLog)">
                 <ion-icon slot="icon-only" name="create-outline"></ion-icon>
               </ion-item-option>
-              <ion-item-option
-                color="danger"
-                expandable="true"
-                (click)="deleteTransaction(transactionLog.id!)"
-              >
+              <ion-item-option color="danger" expandable="true" (click)="deleteTransaction(transactionLog.id!)">
                 <ion-icon slot="icon-only" name="trash"></ion-icon>
               </ion-item-option>
             </ion-item-options>
@@ -139,22 +87,12 @@
   } @else {
   <ion-grid style="padding: 0 10px !important; height: 100%">
     <ion-row style="height: 100%">
-      <ion-col
-        class="ion-align-self-center ion-justify-content-center ion-padding ion-text-center"
-        style="display: grid; width: 100%"
-      >
-        <ion-button
-          color="dark"
-          fill="solid"
-          shape="round"
-          size="large"
-          (click)="checkPermission()"
-        >
+      <ion-col class="ion-align-self-center ion-justify-content-center ion-padding ion-text-center"
+        style="display: grid; width: 100%">
+        <ion-button color="dark" fill="solid" shape="round" size="large" (click)="checkPermission()">
           Request Permission
         </ion-button>
-        <i class="ion-margin-top"
-          >We don't have the permission to access your SMS</i
-        >
+        <i class="ion-margin-top">We don't have the permission to access your SMS</i>
       </ion-col>
     </ion-row>
   </ion-grid>

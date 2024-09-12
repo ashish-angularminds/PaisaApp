@@ -1,9 +1,9 @@
 <!-- <ion-content style="background-image: url('../../assets/homebg.png');"> -->
-<ion-header mode="ios" [translucent]="true" class="ion-no-border ion-padding-horizontal ion-margin-top ion-padding-top">
+<ion-header mode="ios" [translucent]="true" class="ion-no-border ion-padding-horizontal" style="padding-top: 32px;padding-bottom: 16px;">
   <ion-toolbar color="transparent">
     <ion-buttons slot="start">
       <ion-button class="userlogo" shape="round" color="dark" (click)="setProfileModelFlag(true)">
-        <ion-img src="../../assets/boy.png"></ion-img>
+        <img [src]="user!.metadata!.photoURL ||'../../assets/boy.png'" style="border-radius: 50%;" />
       </ion-button>
       <ion-button color="dark" size="large" strong="true">
         <div class="ion-text-left">
@@ -11,8 +11,8 @@
             Hi,
           </i>
           <br />
-          <h1 class="ion-no-margin">
-            {{user.metadata.displayName|uppercase}}
+          <h1 class="ion-no-margin wrap-extra-text h1-wrap">
+            {{user!.metadata!.displayName!|uppercase}}
           </h1>
         </div>
       </ion-button>
@@ -20,8 +20,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="none">
-    <ion-grid class="ion-no-padding ion-margin-top">
+<ion-content color="none" fullscreen="true">
+    <ion-grid class="ion-no-padding">
       <ion-row>
         <ion-col class="ion-no-padding">
           <swiper-container [loop]="true" autoplay="true" effect="flip">

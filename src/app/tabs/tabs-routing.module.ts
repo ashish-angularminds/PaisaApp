@@ -16,6 +16,10 @@ const routes: Routes = [
         loadChildren: () => import('../transaction/tab2.module').then(m => m.Tab2PageModule)
       },
       {
+        path: 'stats',
+        loadChildren: () => import('../stats/stats.module').then(m => m.StatsPageModule)
+      },
+      {
         path: 'smslog',
         loadChildren: () => import('../smsFeature/tab3.module').then(m => m.Tab3PageModule)
       },

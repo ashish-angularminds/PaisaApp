@@ -1,8 +1,5 @@
-<ion-header
-  mode="ios"
-  [translucent]="true"
-  class="ion-no-border ion-padding-horizontal ion-margin-top ion-padding-top"
->
+<ion-header mode="ios" [translucent]="true" class="ion-no-border ion-padding-horizontal"
+  style="padding-top: 32px;padding-bottom: 16px;">
   <ion-toolbar color="transparent">
     <ion-buttons slot="start">
       <ion-button color="dark" size="large" strong="true">
@@ -22,93 +19,47 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content
-  class="ion-padding"
-  style="--padding-start: 10px !important; --padding-end: 10px !important"
->
-  <ion-list
-    [inset]="true"
-    style="border-radius: 16px"
-    class="ion-padding-vertical"
-    [formGroup]="transaction"
-  >
+<ion-content class="ion-padding" style="--padding-start: 10px !important; --padding-end: 10px !important">
+  <ion-list [inset]="true" style="border-radius: 16px" [formGroup]="transaction">
     <ion-item>
-      <ion-input
-        mode="md"
-        placeholder="Enter Transcation Amount"
-        type="number"
-        label="Amount :"
-        formControlName="amount"
-      ></ion-input>
+      <ion-input mode="md" placeholder="Enter Transcation Amount" type="number" label="Amount :"
+        formControlName="amount"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-input
-        mode="md"
-        placeholder="Enter Account Name"
-        type="string"
-        label="Account :"
-        [formControlName]="'account'"
-      ></ion-input>
+      <ion-input mode="md" placeholder="Enter Account Name" type="string" label="Account :"
+        [formControlName]="'account'"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-input
-        mode="md"
-        placeholder="Enter Merchant Name"
-        type="string"
-        label="Merchant :"
-        formControlName="merchant"
-      ></ion-input>
+      <ion-input mode="md" placeholder="Enter Merchant Name" type="string" label="Merchant :"
+        formControlName="merchant"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-select formControlName="type" placeholder="Select Transcation Type">
         <div slot="label">Type :</div>
-        <ion-select-option [value]="transactionType.Credit"
-          >Credit</ion-select-option
-        >
-        <ion-select-option [value]="transactionType.Debit"
-          >Debit</ion-select-option
-        >
+        <ion-select-option [value]="transactionType.Credit">Credit</ion-select-option>
+        <ion-select-option [value]="transactionType.Debit">Debit</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
       <ion-select formControlName="mode" placeholder="Select Transcation Mode">
         <div slot="label">Mode :</div>
-        <ion-select-option [value]="transactionMode.Credit_Card"
-          >Credit Card</ion-select-option
-        >
-        <ion-select-option [value]="transactionMode.Debit_Card"
-          >Debit Card</ion-select-option
-        >
-        <ion-select-option [value]="transactionMode.Cash"
-          >Cash</ion-select-option
-        >
+        <ion-select-option [value]="transactionMode.Credit_Card">Credit Card</ion-select-option>
+        <ion-select-option [value]="transactionMode.Debit_Card">Debit Card</ion-select-option>
+        <ion-select-option [value]="transactionMode.Cash">Cash</ion-select-option>
         <ion-select-option [value]="transactionMode.UPI">UPI</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
-      <ion-select
-        formControlName="category"
-        placeholder="Select Transcation Category"
-      >
+      <ion-select formControlName="category" placeholder="Select Transcation Category">
         <div slot="label">Category :</div>
-        <ion-select-option [value]="transactionCategory.Food"
-          >Food</ion-select-option
-        >
-        <ion-select-option [value]="transactionCategory.Shopping"
-          >Shopping</ion-select-option
-        >
-        <ion-select-option [value]="transactionCategory.Medical"
-          >Medical</ion-select-option
-        >
-        <ion-select-option [value]="transactionCategory.Travel"
-          >Travel</ion-select-option
-        >
-        <ion-select-option [value]="transactionCategory.Other"
-          >Other</ion-select-option
-        >
+        <ion-select-option [value]="transactionCategory.Food">Food</ion-select-option>
+        <ion-select-option [value]="transactionCategory.Shopping">Shopping</ion-select-option>
+        <ion-select-option [value]="transactionCategory.Medical">Medical</ion-select-option>
+        <ion-select-option [value]="transactionCategory.Travel">Travel</ion-select-option>
+        <ion-select-option [value]="transactionCategory.Other">Other</ion-select-option>
       </ion-select>
     </ion-item>
 
@@ -117,23 +68,14 @@
       <ion-datetime-button datetime="datetime"></ion-datetime-button>
       <ion-modal [keepContentsMounted]="true">
         <ng-template>
-          <ion-datetime
-            id="datetime"
-            hourCycle="h12"
-            formControlName="createdAt"
-            mode="ios"
-          ></ion-datetime>
+          <ion-datetime id="datetime" hourCycle="h12" formControlName="createdAt" mode="ios"></ion-datetime>
         </ng-template>
       </ion-modal>
     </ion-item>
 
     <ion-item>
-      <ion-textarea
-        label="Body :"
-        placeholder="Enter Body Name"
-        [autoGrow]="true"
-        [formControlName]="'body'"
-      ></ion-textarea>
+      <ion-textarea label="Body :" placeholder="Enter Body Name" [autoGrow]="true"
+        [formControlName]="'body'"></ion-textarea>
     </ion-item>
   </ion-list>
 </ion-content>
