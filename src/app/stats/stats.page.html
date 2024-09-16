@@ -11,11 +11,22 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <h1>sdsdsud</h1>
-
-  <div style="background: #ffffff4b; border: 1px solid #fff;" class="ion-padding">
-    <div echarts [options]="chartOption" class="demo-chart"></div>
-  </div>
-
+<ion-content [fullscreen]="true">
+  <canvas baseChart style="width: 100%;"
+  [type]="'polarArea'"
+  [datasets]="[pieChartDatasets]"
+  [labels]="pieChartLabels"
+  [options]="pieChartOptions"
+  [legend]="pieChartLegend"></canvas>
+  <swiper-container [loop]="true">
+    <swiper-slide>
+      <h1>ash</h1>
+    </swiper-slide>
+    <swiper-slide>
+      <h1>ash</h1>
+    </swiper-slide>
+    <swiper-slide>
+      <h1>ash</h1>
+    </swiper-slide>
+  </swiper-container>
 </ion-content>
