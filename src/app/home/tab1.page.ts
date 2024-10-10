@@ -84,7 +84,7 @@ export class Tab1Page implements OnInit, DoCheck, OnDestroy {
     let totalDays = new Date(date.getUTCFullYear(), date.getUTCMonth() + 1, 0).getDate();
     let remainingDays = date.getDate();
     let quota = Math.trunc((this.foodCreditAmount - this.foodSpentAmount) / ((totalDays - remainingDays) + 1));
-    let totalquota = Math.trunc((this.foodCreditAmount - this.foodSpentAmount) / totalDays);
+    let totalquota = Math.trunc((this.foodCreditAmount) / totalDays);
     return quota + " / " + totalquota;
   }
 

@@ -1,5 +1,6 @@
 <!-- <ion-content style="background-image: url('../../assets/homebg.png');"> -->
-<ion-header mode="ios" [translucent]="true" class="ion-no-border ion-padding-horizontal" style="padding-top: 32px;padding-bottom: 16px;">
+<ion-header mode="ios" [translucent]="true" class="ion-no-border ion-padding-horizontal"
+  style="padding-top: 32px;padding-bottom: 16px;">
   <ion-toolbar color="transparent">
     <ion-buttons slot="start">
       <ion-button class="userlogo" shape="round" color="dark" (click)="setProfileModelFlag(true)">
@@ -21,145 +22,145 @@
 </ion-header>
 
 <ion-content color="none" fullscreen="true">
-    <ion-grid class="ion-no-padding">
-      <ion-row>
-        <ion-col class="ion-no-padding">
-          <swiper-container [loop]="true" autoplay="true" effect="flip">
-            <swiper-slide class="ion-padding-horizontal">
-              <div class="outer-box box-shadow">
-                <div class="inner-box">
-                  <h3 class="ion-no-margin title-text">Total Credit</h3>
-                  <h1 class="ion-no-margin amount-text">
-                    {{account?.totalCredit|currency:'INR'}} /
-                    {{(account?.totalCredit - account?.totalSpent)|currency:'INR'}}
-                  </h1>
-                </div>
-                <div class="inner-box">
-                  <h3 class="ion-no-margin amount-text">
-                    {{account?.totalSpent|currency:'INR'}}
-                  </h3>
-                  <h3 class="ion-no-margin title-text">Total Spend</h3>
-                </div>
+  <ion-grid class="ion-no-padding">
+    <ion-row>
+      <ion-col class="ion-no-padding">
+        <swiper-container [loop]="true" autoplay="true" effect="flip">
+          <swiper-slide class="ion-padding-horizontal">
+            <div class="outer-box box-shadow">
+              <div class="inner-box">
+                <h3 class="ion-no-margin title-text">Total Credit</h3>
+                <h1 class="ion-no-margin amount-text">
+                  {{account?.totalCredit|currency:'INR'}} /
+                  {{(account?.totalCredit - account?.totalSpent)|currency:'INR'}}
+                </h1>
               </div>
-            </swiper-slide>
-            <swiper-slide class="ion-padding-horizontal">
+              <div class="inner-box">
+                <h3 class="ion-no-margin amount-text">
+                  {{account?.totalSpent|currency:'INR'}}
+                </h3>
+                <h3 class="ion-no-margin title-text">Total Spend</h3>
+              </div>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="ion-padding-horizontal">
             <div class="outer-box box-shadow">
               <div class="inner-box">
                 <h3 class="ion-no-margin title-text">Food</h3>
                 <h1 class="ion-no-margin amount-text">
                   {{foodSpentAmount!|currency:'INR'}} /
-                  {{foodCreditAmount!|currency:'INR'}}
+                  {{foodCreditAmount! - foodSpentAmount! |currency:'INR'}}
                 </h1>
               </div>
               <div class="inner-box">
                 <h3 class="ion-no-margin amount-text">
-                  {{calculateQuota()}}
+                  {{calculateQuota()}}/{{foodCreditAmount!}}
                 </h3>
                 <h3 class="ion-no-margin title-text">Quota</h3>
               </div>
             </div>
-            </swiper-slide>
-            <swiper-slide class="ion-padding-horizontal">
-              <div class="outer-box box-shadow">
-                <div class="inner-box">
-                  <h3 class="ion-no-margin title-text">Shopping</h3>
-                  <h1 class="ion-no-margin amount-text">
-                    {{shoppingSpentAmount!|currency:'INR'}} /
-                    {{shoppingCreditAmount!|currency:'INR'}}
-                  </h1>
-                </div>
-                <div class="inner-box">
-                  <h3 class="ion-no-margin amount-text">
-                    {{travelSpentAmount!|currency:'INR'}} /
-                    {{travelCreditAmount!|currency:'INR'}}
-                  </h3>
-                  <h3 class="ion-no-margin title-text">Travel</h3>
-                </div>
+          </swiper-slide>
+          <swiper-slide class="ion-padding-horizontal">
+            <div class="outer-box box-shadow">
+              <div class="inner-box">
+                <h3 class="ion-no-margin title-text">Shopping</h3>
+                <h1 class="ion-no-margin amount-text">
+                  {{shoppingSpentAmount!|currency:'INR'}} /
+                  {{shoppingCreditAmount!|currency:'INR'}}
+                </h1>
               </div>
-            </swiper-slide>
-            <swiper-slide class="ion-padding-horizontal">
-              <div class="outer-box box-shadow">
-                <div class="inner-box">
-                  <h3 class="ion-no-margin title-text">Other</h3>
-                  <h1 class="ion-no-margin amount-text">
-                    {{otherSpentAmount!|currency:'INR'}} /
-                    {{otherCreditAmount!|currency:'INR'}}
-                  </h1>
-                </div>
-                <div class="inner-box">
-                  <h3 class="ion-no-margin amount-text" style="display: flex; justify-content: space-between">
-                    {{medicalSpentAmount!|currency:'INR'}} /
-                    {{medicalCreditAmount!|currency:'INR'}}
-                  </h3>
-                  <h3 class="ion-no-margin title-text" style="display: flex; justify-content: space-between">
-                    Medical
-                  </h3>
-                </div>
+              <div class="inner-box">
+                <h3 class="ion-no-margin amount-text">
+                  {{travelSpentAmount!|currency:'INR'}} /
+                  {{travelCreditAmount!|currency:'INR'}}
+                </h3>
+                <h3 class="ion-no-margin title-text">Travel</h3>
               </div>
-            </swiper-slide>
-          </swiper-container>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="ion-padding-horizontal">
+            <div class="outer-box box-shadow">
+              <div class="inner-box">
+                <h3 class="ion-no-margin title-text">Other</h3>
+                <h1 class="ion-no-margin amount-text">
+                  {{otherSpentAmount!|currency:'INR'}} /
+                  {{otherCreditAmount!|currency:'INR'}}
+                </h1>
+              </div>
+              <div class="inner-box">
+                <h3 class="ion-no-margin amount-text" style="display: flex; justify-content: space-between">
+                  {{medicalSpentAmount!|currency:'INR'}} /
+                  {{medicalCreditAmount!|currency:'INR'}}
+                </h3>
+                <h3 class="ion-no-margin title-text" style="display: flex; justify-content: space-between">
+                  Medical
+                </h3>
+              </div>
+            </div>
+          </swiper-slide>
+        </swiper-container>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
-    
-    <ion-grid class="ion-padding">
-      <ion-row>
-        <ion-col>
-          <ion-text color="medium" class="sub-title">Transaction History</ion-text>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>
-          <ion-list [inset]="false" lines="full" class="transaction-list" >
-            <ion-item-sliding *ngFor="let transactionLog of account?.transactions|sortList">
-              <ion-item [button]="true" [id]="transactionLog.id">
-                <ion-icon class="ion-no-margin ion-margin-end" slot="start" size="large"
-                  [name]="transactionLog?.type===0?'add-circle':'remove-circle'"
-                  [color]="transactionLog?.type===0?'success':'danger'"></ion-icon>
-                <ion-label [color]="transactionLog?.type===0?'success':'danger'">
-                  <h2>{{transactionLog?.amount|currency:'INR'}}</h2>
-                  <small>{{transactionLog?.createdAt|fullDate}}</small>
+
+  <ion-grid class="ion-padding">
+    <ion-row>
+      <ion-col>
+        <ion-text color="medium" class="sub-title">Transaction History</ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-list [inset]="false" lines="full" class="transaction-list">
+          <ion-item-sliding *ngFor="let transactionLog of account?.transactions|sortList">
+            <ion-item [button]="true" [id]="transactionLog.id">
+              <ion-icon class="ion-no-margin ion-margin-end" slot="start" size="large"
+                [name]="transactionLog?.type===0?'add-circle':'remove-circle'"
+                [color]="transactionLog?.type===0?'success':'danger'"></ion-icon>
+              <ion-label [color]="transactionLog?.type===0?'success':'danger'">
+                <h2>{{transactionLog?.amount|currency:'INR'}}</h2>
+                <small>{{transactionLog?.createdAt|fullDate}}</small>
+              </ion-label>
+
+              <ion-label slot="end" style="display: contents">
+                <ion-label slot="start" class="wrap-extra-text">
+                  <small>{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small>
+                  <br />
+                  @if (transactionLog?.type === 0) {
+                  <small>{{transactionLog?.category|category}}</small>
+                  } @else {
+                  <small>{{transactionLog?.category|category}} / {{
+                    transactionLog?.merchant}}</small>
+                  }
                 </ion-label>
 
-                <ion-label slot="end" style="display: contents">
-                  <ion-label slot="start" class="wrap-extra-text">
-                    <small>{{transactionLog?.account}}/{{transactionLog?.mode|mode}}</small>
-                    <br />
-                    @if (transactionLog?.type === 0) {
-                    <small>{{transactionLog?.category|category}}</small>
-                    } @else {
-                    <small>{{transactionLog?.category|category}} / {{
-                      transactionLog?.merchant}}</small>
-                    }
-                  </ion-label>
-
-                  <ion-label style="max-width: 25%" slot="end" class="ion-text-right"
-                    [color]="transactionLog?.type===1?'success':'danger'">
-                  </ion-label>
+                <ion-label style="max-width: 25%" slot="end" class="ion-text-right"
+                  [color]="transactionLog?.type===1?'success':'danger'">
                 </ion-label>
-              </ion-item>
+              </ion-label>
+            </ion-item>
 
-              <ion-popover [trigger]="transactionLog?.id" triggerAction="click" alignment="end">
-                <ng-template>
-                  <ion-content class="ion-padding">{{transactionLog?.body}}</ion-content>
-                </ng-template>
-              </ion-popover>
+            <ion-popover [trigger]="transactionLog?.id" triggerAction="click" alignment="end">
+              <ng-template>
+                <ion-content class="ion-padding">{{transactionLog?.body}}</ion-content>
+              </ng-template>
+            </ion-popover>
 
-              <ion-item-options slot="end">
-                <ion-item-option color="primary" expandable="true" (click)="updateTransaction(transactionLog)">
-                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-                </ion-item-option>
-                <ion-item-option color="danger" expandable="true"
-                  (click)="deleteTransaction(transactionLog.id!, transactionLog.createdAt?.seconds!)">
-                  <ion-icon slot="icon-only" name="trash"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
-          </ion-list>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+            <ion-item-options slot="end">
+              <ion-item-option color="primary" expandable="true" (click)="updateTransaction(transactionLog)">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-item-option>
+              <ion-item-option color="danger" expandable="true"
+                (click)="deleteTransaction(transactionLog.id!, transactionLog.createdAt?.seconds!)">
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
   <ion-modal [isOpen]="profileModelFlag" mode="ios">
     <ng-template>
