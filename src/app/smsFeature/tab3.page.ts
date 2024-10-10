@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -40,7 +41,7 @@ import { StorageService } from '../services/storage.service';
   styleUrls: ['tab3.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Tab3Page implements OnInit, DoCheck {
+export class Tab3Page implements OnInit, DoCheck, AfterViewInit {
   constructor(
     private store: Store<initalUserStateInterface>,
     private firestoreService: FirestoreService,
@@ -105,6 +106,10 @@ export class Tab3Page implements OnInit, DoCheck {
     // this.loadData();
   }
 
+  ngAfterViewInit(): void {
+    this.checkPermission();
+  }
+
   ngDoCheck(): void {
     if (!this.permissionFlag) {
       this.loadData();
@@ -112,20 +117,25 @@ export class Tab3Page implements OnInit, DoCheck {
   }
 
   async checkPermission() {
+    let loader = this.loaderCtr.create();
+    (await loader).present();
     if ((await SMSInboxReader.checkPermissions()).sms !== 'granted') {
       SMSInboxReader.requestPermissions().then(
-        (value: PermissionStatus | any) => {
+        async(value: PermissionStatus | any) => {
           if (value === 'granted') {
             this.permissionFlag = true;
             this.loadData();
           } else {
             this.permissionFlag = false;
           }
+          (await loader).dismiss();
         }
       );
     } else {
       this.permissionFlag = true;
+      (await loader).dismiss();
     }
+    this.changeDetector.detectChanges();
   }
 
   async loadData() {
