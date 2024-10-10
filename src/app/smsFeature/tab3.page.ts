@@ -50,7 +50,7 @@ export class Tab3Page implements OnInit, DoCheck {
     private storageService: StorageService,
     private changeDetector: ChangeDetectorRef,
     private loaderCtr: LoadingController
-  ) {}
+  ) { }
 
   public resetActionSheetButtons = [
     {
@@ -86,17 +86,17 @@ export class Tab3Page implements OnInit, DoCheck {
   smsList: any = [];
   filter!: SMSFilter;
   transactionRegex =
-    /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited|credited|withdrawn/i;
+    /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited|credited|withdrawn|deposited/i;
   spendRegex =
     /sent|spent|transfer|purchase|payment|hand-picked|paid|fueled|debited/i;
-  creditRegex = /credited/i;
+  creditRegex = /credited|deposited/i;
   amountRegex = /inr|by|rs/i;
   merchantRegex = /\bto\b|\bat\b/i;
   permissionFlag = false;
 
   async ngOnInit() {
     this.checkPermission();
-    this.store.select(selectState).subscribe(async (data) => {
+    this.store.select(selectState).subscribe(async (data: any) => {
       this.user = data;
       this.smsList = [...(data.sms.smsList || [])];
       await this.firestoreService.updateDoc(data.metadata.uid!, data);
@@ -133,12 +133,17 @@ export class Tab3Page implements OnInit, DoCheck {
     let filter: SMSFilter = { minDate: this.user.sms.lastSMSUpdate?.seconds };
     SMSInboxReader.getSMSList({ filter: filter }).then(async (data) => {
       tmpData = this.organizeData(
-        data.smsList.filter(
+        data.smsList.map((d) => {
+          let tmpData = { ...d, body: d.body.split('\n').join(' ') };
+          return tmpData;
+        }).filter(
           (element: SMSObject) =>
             this.transactionRegex.test(element.body) &&
             /^((?!otp).)*$/gim.test(element.body) &&
+            /^((?!reminder).)*$/gim.test(element.body) &&
             /^((?!statement).)*$/gim.test(element.body) &&
             /^((?!not completed).)*$/gim.test(element.body) &&
+            /^((?!request).)*$/gim.test(element.body) &&
             /^((?!request).)*$/gim.test(element.body)
         )
       );
@@ -178,52 +183,54 @@ export class Tab3Page implements OnInit, DoCheck {
         createdAt: { seconds: element.date },
         updatedAt: { seconds: element.date },
         amount: '',
-        type: this.creditRegex.test(element?.body)
+        type: /credited/i.test(element?.body)
           ? transactionType.Credit
-          : transactionType.Debit,
+          : this.spendRegex.test(element?.body)
+            ? transactionType.Debit
+            : transactionType.Credit,
         mode: /upi/i.test(element?.body)
           ? transactionMode.UPI
           : /withdrawn|atm/i.test(element?.body)
-          ? transactionMode.Debit_Card
-          : /bank card|card/i.test(element?.body)
-          ? transactionMode.Credit_Card
-          : /bank/i.test(element?.body)
-          ? transactionMode.UPI
-          : transactionMode.UPI,
+            ? transactionMode.Debit_Card
+            : /bank card|card/i.test(element?.body)
+              ? transactionMode.Credit_Card
+              : /bank/i.test(element?.body)
+                ? transactionMode.UPI
+                : transactionMode.UPI,
         account: element?.address,
         category: this.filterCategory(element?.body),
         body: element?.body,
       };
-      if (this.spendRegex.test(element.body)) {
+      if (this.transactionRegex.test(element.body)) {
         let splitString = element.body.split(' ');
         splitString.forEach((str: any, index: number) => {
           if (this.amountRegex.test(str)) {
             amountFlag = true;
           }
           if (amountFlag && finalamountFlag) {
+            console.log('crd-check:- ', str);
             let tmparr = str.split('.');
             if (tmparr) {
               newtransaction.amount =
                 newtransaction.amount +
-                (str.match(/\d/g)
-                  ? str
-                      .split('.')
-                      .map((data: any, i: number) => {
-                        let tmpamt = data.match(/\d/g)
-                          ? data.match(/\d/g).join('')
-                          : '';
-                        return i !== 0 && tmparr[i - 1].match(/\d/g)
-                          ? '.' + tmpamt
-                          : tmpamt;
-                      })
-                      .join('')
-                  : '');
+                str.split('.')
+                  .map((data: any, i: number) => {
+                    let tmpamt =
+                      (data + '').match(/\d/g) &&
+                        /^((?!%).)*$/gim.test(data + '')
+                        ? (data + '').match(/\d/g)?.join('')
+                        : '';
+                    return tmpamt !== '00' && tmpamt !== '0' && tmpamt ?
+                      (i !== 0 && (tmparr[i - 1] + '').match(/\d/g) ?
+                        '.' + tmpamt : tmpamt) : '';
+                  })
+                  .join('');
             }
-            amountFlag = (
-              splitString[index + 1] + splitString[index + 2]
-            ).match(/\d/g)
-              ? true
-              : false;
+            amountFlag =
+              (splitString[index + 1] + splitString[index + 2] + '').match(/\d/g) &&
+                /^((?!on).)*$/gim.test(splitString[index + 1] + splitString[index + 2] + '')
+                ? true
+                : false;
             finalamountFlag = amountFlag;
           }
           if (
@@ -244,6 +251,8 @@ export class Tab3Page implements OnInit, DoCheck {
           }
         });
       }
+
+      console.log('tmpData:- ', JSON.stringify(newtransaction));
       if (newtransaction.amount) {
         tmpQueue.push(newtransaction);
       }
